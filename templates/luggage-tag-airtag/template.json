@@ -1,0 +1,90 @@
+{
+  "id": "luggage-tag-airtag",
+  "name": "AirTag Luggage Tag",
+  "units": "mm",
+  "tags": [
+    "tag",
+    "travel",
+    "luggage",
+    "airtag"
+  ],
+  "author": "Jonesie",
+  "parts": [
+    {
+      "id": "front",
+      "label": "Front",
+      "colour": 0,
+      "mesh": "front.glb"
+    },
+    {
+      "id": "back",
+      "label": "Back",
+      "colour": 0,
+      "mesh": "back.glb"
+    }
+  ],
+  "colours": [
+    "#2980b9",
+    "#f4f4f0"
+  ],
+  "notes": "A luggage tag that holds an Apple AirTag (or any 32 mm round tracker): two halves that snap together and can be opened again, with your name and phone engraved on the front and a slot for a strap.",
+  "printInstructions": "**Printing**\n- Print both halves flat as placed, outer face down, no supports. Use PETG if you can: the snap tabs bend a little and PLA is more likely to crack.\n- Three perimeters or more, so the thin tabs are solid walls.\n- The name and phone are engraved into the bed face of the front half, so use a smooth plate.\n\n**Assembly**\n- Drop the AirTag into the cup of the back half, then turn the front half over (flip it about its long edge so the strap slot lines up) and press it down until the four tabs click into the groove.\n- To open it, pry gently at a slot between two tabs with a coin or small screwdriver and lift the front half off.\n- Thread a strap through the slot at the left end.\n\n**Fit and sound**\n- The cavity is 33.4 mm across and 8.4 mm deep, for the AirTag's 31.9 mm × 8.0 mm. Check yours with calipers; other round trackers need a different size.\n- The back half has a ring of holes so the AirTag's speaker is not fully sealed in. If the sound is muffled, turn the AirTag over.",
+  "published": false,
+  "zones": [
+    {
+      "id": "name",
+      "label": "Name",
+      "part": "front",
+      "colour": 1,
+      "origin": [
+        4,
+        9,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 56,
+      "height": 14,
+      "mode": "engrave",
+      "depth": 0.8,
+      "maxLines": 1,
+      "default": "Peter Jones"
+    },
+    {
+      "id": "phone",
+      "label": "Phone",
+      "part": "front",
+      "colour": 1,
+      "origin": [
+        4,
+        -9,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 56,
+      "height": 9,
+      "mode": "engrave",
+      "depth": 0.8,
+      "maxLines": 1,
+      "default": "+64 21 123 4567",
+      "font": "OpenSans"
+    }
+  ]
+}
