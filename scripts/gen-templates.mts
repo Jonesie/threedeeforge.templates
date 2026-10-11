@@ -436,6 +436,129 @@ const templates: Tpl[] = [
     ],
   },
   {
+    id: 'trumpkin',
+    name: 'Trumpkin',
+    tags: ['halloween', 'pumpkin', 'novelty', 'plinth'],
+    notes: 'A hollow carved pumpkin with a swept-over head of hair, standing on a square black plinth with a swap-out nameplate. The face is cut right through so a tea light or LED inside lights it up.',
+    printInstructions: 'A hollow Halloween pumpkin on a square black plinth. Every piece prints separately: pumpkin, hair, stem, plinth base, top cap and front nameplate.\n\n**Printing**\n- The pumpkin is a 3 mm hollow shell, open underneath, with the eyes, brows, nose, mouth and jowl lines cut right through. Print it upright as placed with tree supports inside the dome. Use a translucent or light orange filament and the glow shows best.\n- Print the hair upright as placed with tree supports: the sweep over the brow overhangs.\n- Print the stem standing up on its peg end.\n- The plinth base is a hollow shell, open front and top. Print it upright.\n- Print the top cap and the front nameplate separately (the nameplate flat, face up, for the cleanest engraving).\n\n**Assembly**\n- The hair sits on the pumpkin, and the stem\'s peg friction-fits into the hole in the hair. Glue them if you prefer.\n- The nameplate slides down into a slot behind the base\'s open front, so you can print several and swap the name whenever you like. The cap sits on a friction-fit locating spigot.\n- The pumpkin simply stands on the cap. Put a battery tea light or a small LED puck on the cap under it before you set the pumpkin down.\n\n**Colours**\n- Black plinth and nameplate, orange pumpkin, golden hair, green stem, yellow nameplate text.',
+    // Z up, faces -Y. Plinth 72 x 72 x 35 (4 mm foot, 68 x 68 hollow shell,
+    // 4 mm cap), no wider than the 74 mm pumpkin, built the same way as statue-trump's: hollow base with a
+    // T-slot behind the open front, friction-fit cap, slide-in nameplate.
+    // Pumpkin: a ring of overlapping ellipsoid lobes round a core, flat-cut
+    // at the cap, hollowed to a 3 mm shell open underneath. The face is 2D
+    // shapes extruded through the front wall, so it can be lit from inside.
+    parts: [
+      { id: 'plinth-base', label: 'Plinth Base', colour: 0 },
+      { id: 'plinth-top', label: 'Plinth Top', colour: 0 },
+      { id: 'plinth-front', label: 'Plinth Front', colour: 0 },
+      { id: 'pumpkin', label: 'Pumpkin', colour: 1 },
+      { id: 'hair', label: 'Hair', colour: 4 },
+      { id: 'stem', label: 'Stem', colour: 3 },
+    ],
+    colours: ['#222226', '#e67e22', '#ffe14d', '#4a7c2c', '#e8b020'],
+    build: () => {
+      const SEG = 48
+      const ell = (rx: number, ry: number, rz: number, x: number, y: number, z: number) =>
+        Manifold.sphere(1, SEG).scale([rx, ry, rz]).translate(x, y, z)
+      const sph = (r: number, x: number, y: number, z: number) => ell(r, r, r, x, y, z)
+
+      // ---- Plinth (same mechanism as statue-trump) ----
+      const BW = 68, P = 35, wallT = 3
+      const boxH = P - 8 // 27, z 4..31
+      const voidBackY = BW / 2 - wallT
+      const voidFrontY = -BW / 2 - 5
+      const boxVoid = Manifold.extrude(roundedRect(BW - 2 * wallT, voidBackY - voidFrontY, 1.5), boxH + 2)
+        .translate(0, (voidBackY + voidFrontY) / 2, -1)
+      const slotClear = 0.3, slotInset = 2, slotDepth = 1.5
+      const voidHalfW = (BW - 2 * wallT) / 2
+      const railY0 = -BW / 2
+      const rail = (side: 1 | -1) => Manifold.cube([slotInset, slotDepth, boxH], true)
+        .translate(side * (voidHalfW - slotInset / 2), railY0 + slotDepth / 2, 4 + boxH / 2)
+      const plinthBase = Manifold.union([
+        Manifold.extrude(roundedRect(BW + 4, BW + 4, 3), 4),
+        Manifold.extrude(roundedRect(BW, BW, 2), boxH).subtract(boxVoid).translate(0, 0, 4),
+        rail(1), rail(-1),
+      ])
+      const spigotClear = 0.25
+      const spigotFrontY = -BW / 2 + 5
+      const spigotBackY = voidBackY - spigotClear
+      const spigot = Manifold.extrude(roundedRect(BW - 2 * wallT - 2 * spigotClear, spigotBackY - spigotFrontY, 1.5), 6)
+        .translate(0, (spigotBackY + spigotFrontY) / 2, P - 10)
+      const plinthTop = Manifold.union([Manifold.extrude(roundedRect(BW + 2, BW + 2, 3), 4).translate(0, 0, P - 4), spigot])
+      const bodyW = BW - 2 * wallT - 2 * slotClear
+      const lipW = bodyW - 2 * slotInset
+      const plinthFront = Manifold.union([
+        Manifold.cube([lipW, slotDepth, boxH], true).translate(0, railY0 + slotDepth / 2, 4 + boxH / 2),
+        Manifold.cube([bodyW, wallT - slotDepth, boxH], true)
+          .translate(0, railY0 + slotDepth + (wallT - slotDepth) / 2, 4 + boxH / 2),
+      ])
+
+      // ---- Pumpkin ----
+      // Built in a local frame (centre z = Zc, flat seat at PB), moved down onto the cap at the end.
+      const Zc = 75, PB = 51, rz = 30, lobeC = 8, lobeR = 29, lobeT = 22, coreR = 26, LOBES = 12
+      // s > 0 shrinks every lobe by s (an inner skin); s < 0 grows it (a hair coat).
+      const pumpkin = (s: number) => Manifold.union([
+        ell(coreR - s, coreR - s, rz - 1 - s, 0, 0, Zc),
+        ...Array.from({ length: LOBES }, (_, k) =>
+          ell(lobeR - s, lobeT - s, rz - s, lobeC, 0, 0).rotate([0, 0, (360 / LOBES) * k]).translate(0, 0, Zc)),
+      ])
+      const floor = Manifold.cube([300, 300, 200]).translate(-150, -150, PB)
+      const skin = pumpkin(0).intersect(floor)
+
+      // Face, as XZ shapes (x across, z up; the pumpkin's centre is z = Zc).
+      const bar = (x0: number, z0: number, x1: number, z1: number, r: number) =>
+        CrossSection.hull([CrossSection.circle(r, 16).translate(x0, z0), CrossSection.circle(r, 16).translate(x1, z1)])
+      const oval = (rx: number, rz2: number, x: number, z: number, deg = 0) =>
+        CrossSection.circle(1, 32).scale([rx, rz2]).rotate(deg).translate(x, z)
+      const soften = (cs: CrossSection, r: number) => cs.offset(-r, 'Round', 2, 16).offset(r, 'Round', 2, 16)
+      const face = CrossSection.union([
+        oval(5.5, 2.4, -9, 79, -12), oval(5.5, 2.4, 9, 79, 12),                       // squinting eyes
+        bar(-17, 85.5, -3.5, 82, 1.4), bar(17, 85.5, 3.5, 82, 1.4),                   // heavy brows
+        soften(CrossSection.ofPolygons([[[-4, 67], [4, 67], [0, 76]]]), 1),           // nose
+        oval(6.5, 1.5, 0, 62.8), oval(4.5, 2.2, 0, 60.4),                             // pursed lips
+        bar(-11, 64, -12.5, 57, 0.9), bar(11, 64, 12.5, 57, 0.9),                     // jowl lines
+      ])
+      const carve = Manifold.extrude(face, 62).rotate([90, 0, 0]).translate(0, -8, 0) // y in [-70, -8]
+      // Hollow it (3 mm walls, open underneath: the disc under the dome is cut
+      // away too, so a tea light fits) and cut the face right through.
+      const inner = Manifold.union([pumpkin(3), Manifold.cylinder(30, 19.5, 19.5, 64).translate(0, 0, PB - 6)])
+      const pumpkinM = skin.subtract(inner).subtract(carve)
+
+      // ---- Hair, and the separate stem that plugs into it ----
+      const stemBody = Manifold.hull([sph(4.4, 0, 10, 111), sph(3.4, 3, 14, 117)])
+      const peg = Manifold.cylinder(12, 3, 3, 32).translate(0, 10, 100) // plugs into the hole in the hair
+      // Lower edge of the hair: tilted back, and wavy with a few pointed locks
+      // rather than a straight cut, falling a little lower on the right.
+      const tri = (x: number) => Math.abs(((x / 9) % 1 + 1) % 1 - 0.5) * 2
+      const edge = (x: number) => 3 * Math.sin(x / 6) - 0.1 * x - 4 * (1 - tri(x + 3))
+      const edgePts: [number, number][] = []
+      for (let x = -60; x <= 60; x += 1) edgePts.push([x, edge(x)])
+      const slope = Manifold.extrude(CrossSection.ofPolygons([[...edgePts, [60, 200], [-60, 200]]]), 300)
+        .rotate([90, 0, 0]).translate(0, 150, 0).rotate([-16, 0, 0]).translate(0, 0, 84)
+      // The comb-over: a lock that arcs across the forehead and tapers to a point.
+      const lock: [number, number, number, number][] = [
+        [-18, -20, 101, 7], [-11, -28, 99, 7], [-2, -33, 96.5, 6.5], [8, -34.5, 93.5, 5.5], [16, -31, 90, 4], [21, -26, 86.5, 2.2],
+      ]
+      const swoop = Manifold.union([
+        ...lock.slice(1).map((q, i) => Manifold.hull([sph(lock[i][3], lock[i][0], lock[i][1], lock[i][2]), sph(q[3], q[0], q[1], q[2])])),
+        Manifold.hull([sph(8, -8, -17, 104), sph(7, 4, -27, 100), sph(7, -14, -22, 101)]),
+      ])
+      const coat = pumpkin(-4).intersect(slope)
+      const peghole = Manifold.cylinder(40, 3.4, 3.4, 32).translate(0, 10, 95)
+      const hair = Manifold.union([coat, swoop]).subtract(pumpkin(0)).subtract(peghole)
+      const stem = Manifold.union([stemBody, peg]).subtract(pumpkin(0)).subtract(hair)
+
+      const seat = (m: M) => m.translate(0, 0, P - PB)
+      return { 'plinth-base': plinthBase, 'plinth-top': plinthTop, 'plinth-front': plinthFront, pumpkin: seat(pumpkinM), hair: seat(hair), stem: seat(stem) }
+    },
+    zones: [
+      { id: 'name', label: 'Name', part: 'plinth-front', colour: 2, origin: [0, -34, 24], normal: [0, -1, 0], up: [0, 0, 1],
+        width: 50, height: 9, mode: 'engrave', depth: 1, maxLines: 1, default: 'Trumpkin' },
+      { id: 'caption', label: 'Caption', part: 'plinth-front', colour: 2, origin: [0, -34, 13], normal: [0, -1, 0], up: [0, 0, 1],
+        width: 50, height: 12, mode: 'engrave', depth: 0.8, maxLines: 2, default: 'Make Halloween\nGreat Again' },
+    ],
+  },
+  {
     id: 'coffin',
     name: 'Coffin',
     tags: ['memorial', 'novelty', 'halloween'],

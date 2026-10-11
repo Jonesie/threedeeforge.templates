@@ -1,0 +1,115 @@
+{
+  "id": "trumpkin",
+  "name": "Trumpkin",
+  "units": "mm",
+  "tags": [
+    "halloween",
+    "pumpkin",
+    "novelty",
+    "plinth"
+  ],
+  "author": "Jonesie",
+  "parts": [
+    {
+      "id": "plinth-base",
+      "label": "Plinth Base",
+      "colour": 0,
+      "mesh": "plinth-base.glb"
+    },
+    {
+      "id": "plinth-top",
+      "label": "Plinth Top",
+      "colour": 0,
+      "mesh": "plinth-top.glb"
+    },
+    {
+      "id": "plinth-front",
+      "label": "Plinth Front",
+      "colour": 0,
+      "mesh": "plinth-front.glb"
+    },
+    {
+      "id": "pumpkin",
+      "label": "Pumpkin",
+      "colour": 1,
+      "mesh": "pumpkin.glb"
+    },
+    {
+      "id": "hair",
+      "label": "Hair",
+      "colour": 4,
+      "mesh": "hair.glb"
+    },
+    {
+      "id": "stem",
+      "label": "Stem",
+      "colour": 3,
+      "mesh": "stem.glb"
+    }
+  ],
+  "colours": [
+    "#222226",
+    "#e67e22",
+    "#ffe14d",
+    "#4a7c2c",
+    "#e8b020"
+  ],
+  "notes": "A hollow carved pumpkin with a swept-over head of hair, standing on a square black plinth with a swap-out nameplate. The face is cut right through so a tea light or LED inside lights it up.",
+  "printInstructions": "A hollow Halloween pumpkin on a square black plinth. Every piece prints separately: pumpkin, hair, stem, plinth base, top cap and front nameplate.\n\n**Printing**\n- The pumpkin is a 3 mm hollow shell, open underneath, with the eyes, brows, nose, mouth and jowl lines cut right through. Print it upright as placed with tree supports inside the dome. Use a translucent or light orange filament and the glow shows best.\n- Print the hair upright as placed with tree supports: the sweep over the brow overhangs.\n- Print the stem standing up on its peg end.\n- The plinth base is a hollow shell, open front and top. Print it upright.\n- Print the top cap and the front nameplate separately (the nameplate flat, face up, for the cleanest engraving).\n\n**Assembly**\n- The hair sits on the pumpkin, and the stem's peg friction-fits into the hole in the hair. Glue them if you prefer.\n- The nameplate slides down into a slot behind the base's open front, so you can print several and swap the name whenever you like. The cap sits on a friction-fit locating spigot.\n- The pumpkin simply stands on the cap. Put a battery tea light or a small LED puck on the cap under it before you set the pumpkin down.\n\n**Colours**\n- Black plinth and nameplate, orange pumpkin, golden hair, green stem, yellow nameplate text.",
+  "zones": [
+    {
+      "id": "name",
+      "label": "Name",
+      "part": "plinth-front",
+      "colour": 2,
+      "origin": [
+        0,
+        -34,
+        24
+      ],
+      "normal": [
+        0,
+        -1,
+        0
+      ],
+      "up": [
+        0,
+        0,
+        1
+      ],
+      "width": 50,
+      "height": 9,
+      "mode": "engrave",
+      "depth": 1,
+      "maxLines": 1,
+      "default": "Trumpkin"
+    },
+    {
+      "id": "caption",
+      "label": "Caption",
+      "part": "plinth-front",
+      "colour": 2,
+      "origin": [
+        0,
+        -34,
+        13
+      ],
+      "normal": [
+        0,
+        -1,
+        0
+      ],
+      "up": [
+        0,
+        0,
+        1
+      ],
+      "width": 50,
+      "height": 12,
+      "mode": "engrave",
+      "depth": 0.8,
+      "maxLines": 2,
+      "default": "Make Halloween\nGreat Again"
+    }
+  ]
+}
