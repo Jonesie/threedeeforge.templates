@@ -838,6 +838,65 @@ const templates: Tpl[] = [
     ],
   },
   {
+    id: 'luggage-tag-airtag',
+    name: 'AirTag Luggage Tag',
+    tags: ['tag', 'travel', 'luggage', 'airtag'],
+    published: false,
+    notes: 'A luggage tag that holds an Apple AirTag (or any 32 mm round tracker): two halves that snap together and can be opened again, with your name and phone engraved on the front and a slot for a strap.',
+    printInstructions: '**Printing**\n- Print both halves flat as placed, outer face down, no supports. Use PETG if you can: the snap tabs bend a little and PLA is more likely to crack.\n- Three perimeters or more, so the thin tabs are solid walls.\n- The name and phone are engraved into the bed face of the front half, so use a smooth plate.\n\n**Assembly**\n- Drop the AirTag into the cup of the back half, then turn the front half over (flip it about its long edge so the strap slot lines up) and press it down until the four tabs click into the groove.\n- To open it, pry gently at a slot between two tabs with a coin or small screwdriver and lift the front half off.\n- Thread a strap through the slot at the left end.\n\n**Fit and sound**\n- The cavity is 33.4 mm across and 8.4 mm deep, for the AirTag\'s 31.9 mm × 8.0 mm. Check yours with calipers; other round trackers need a different size.\n- The back half has a ring of holes so the AirTag\'s speaker is not fully sealed in. If the sound is muffled, turn the AirTag over.',
+    colours: ['#2980b9', '#f4f4f0'],
+    // Two 76 × 44 halves, each 2 mm floor + 4.2 mm land, printed outer face
+    // down side by side (back half at y = -52). The AirTag (31.9 × 8) sits in a
+    // pocket at (14, 0). The front half carries four cantilever tabs with
+    // barbs that snap into a groove in the back half's pocket wall.
+    build: () => {
+      const CX = 14, FLOOR = 2, LAND = 4.2, H = FLOOR + LAND
+      const R_TAG = 15.95
+      const R_IN = R_TAG + 0.4          // tab inner radius / clearance round the tracker
+      const R_TAB = R_IN + 1.2          // tab outer radius
+      const R_BARB = R_TAB + 0.5
+      const R_BACK = R_TAB + 0.15       // back pocket wall
+      const R_GROOVE = R_BARB + 0.15
+      const R_FRONT_POCKET = R_TAB + 0.35 // air gap round the tabs so they can flex
+      const TAB_LEN = 3.5               // how far the tabs reach past the mating plane
+      const outline = () => Manifold.extrude(roundedRect(76, 44, 10), H)
+      const slot = () => Manifold.extrude(roundedRect(5, 18, 2.5), H + 2).translate(-30, 0, -1)
+      const cyl = (h: number, r: number, z: number) => Manifold.cylinder(h, r, r, 96).translate(CX, 0, z)
+      const cone = (h: number, r0: number, r1: number, z: number) => Manifold.cylinder(h, r0, r1, 96).translate(CX, 0, z)
+
+      // Front half: floor + land, pocket with air gap, ring of four tabs.
+      const ring = cyl(H + TAB_LEN - FLOOR, R_TAB, FLOOR).subtract(cyl(H + TAB_LEN - FLOOR + 1, R_IN, FLOOR - 0.5))
+      const tip = H + TAB_LEN, bz = tip - 1.2
+      const barb = Manifold.union([cone(0.6, R_TAB, R_BARB, bz), cone(0.6, R_BARB, R_TAB, bz + 0.6)])
+        .subtract(cyl(3, R_IN, bz - 1))
+      const cuts = [45, 135, 225, 315].map((a) =>
+        Manifold.cube([30, 1.4, H + TAB_LEN + 2], false).translate(0, -0.7, FLOOR - 0.5).rotate(0, 0, a).translate(CX, 0, 0))
+      const tabs = Manifold.union([ring, barb]).subtract(Manifold.union(cuts))
+      const front = outline().subtract(slot()).subtract(cyl(H, R_FRONT_POCKET, FLOOR)).add(tabs)
+
+      // Back half: floor + land, pocket, snap groove, vent holes.
+      const apex = H - TAB_LEN + 0.6 // groove apex up from the back floor; tab tip sits TAB_LEN below the mating plane, barb apex 0.6 above that
+      const groove = Manifold.union([cone(0.7, R_BACK - 0.1, R_GROOVE + 0.1, apex - 0.7), cone(0.7, R_GROOVE + 0.1, R_BACK - 0.1, apex)])
+      let back = outline().subtract(slot()).subtract(cyl(H, R_BACK, FLOOR)).subtract(groove)
+      const vents = Array.from({ length: 8 }, (_, i) => {
+        const a = (i * Math.PI) / 4
+        return Manifold.cylinder(FLOOR + 2, 1.2, 1.2, 24).translate(CX + 9 * Math.cos(a), 9 * Math.sin(a), -1)
+      })
+      back = back.subtract(Manifold.union(vents)).translate(0, -52, 0)
+      return { front, back }
+    },
+    parts: [
+      { id: 'front', label: 'Front', colour: 0 },
+      { id: 'back', label: 'Back', colour: 0 },
+    ],
+    zones: [
+      { id: 'name', label: 'Name', part: 'front', colour: 1, origin: [4, 9, 0], normal: [0, 0, -1], up: [0, 1, 0],
+        width: 56, height: 14, mode: 'engrave', depth: 0.8, maxLines: 1, default: 'Peter Jones' },
+      { id: 'phone', label: 'Phone', part: 'front', colour: 1, origin: [4, -9, 0], normal: [0, 0, -1], up: [0, 1, 0],
+        width: 56, height: 9, mode: 'engrave', depth: 0.8, maxLines: 1, default: '+64 21 123 4567', font: 'OpenSans' },
+    ],
+  },
+  {
     id: 'cake-topper',
     name: 'Cake Topper',
     tags: ['cake', 'party', 'celebration'],
