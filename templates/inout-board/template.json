@@ -22,6 +22,12 @@
       "mesh": "board.glb"
     },
     {
+      "id": "rim",
+      "label": "Rim",
+      "colour": 1,
+      "mesh": "rim.glb"
+    },
+    {
       "id": "blocks",
       "label": "Slider blocks (10)",
       "colour": 1,
@@ -33,7 +39,7 @@
     "#f4f4f0"
   ],
   "notes": "An in/out board for a hallway, office door, family fridge or medical practice: a heading, ten rows of name, optional icon and two status icons (In and Out, or any two symbols), and a footer. A sliding block on a rail in each row covers one status icon and leaves the other showing. Ten separate slider blocks print with the board.",
-  "printInstructions": "**Printing**\n- Print the board flat as placed, face up, no supports. The rails are dovetails (the sides slope at 45 degrees), so the undercut needs no support. The name text is embossed 1 mm; the status icons are engraved into the floor of each rail.\n- The ten slider blocks print together, flat on their wide side (the side that faces the rail floor), no supports. Each has a small ridge on top to push with a finger.\n- **Colours:** dark board, light text, icons and blocks. The blocks are their own part, so a multi-colour (AMS/MMU) print takes both from the 3MF. On a single extruder, print the board in one colour and the blocks in another.\n\n**Assembly**\n- Each row has a rail with a wider square window midway between its two status icons. Drop a block into the window, then slide it left or right along the rail until it covers one icon. At either end it is held under the sloping edges of the rail, so it cannot lift out, but it can be lifted out in the middle.\n- The fit has 0.3 mm clearance on every side, so a block moves with one finger. If it is tight, rub it on fine sandpaper; if it is loose, print it with a slightly larger scale on the sliding axis, or put a dab of candle wax on the rail.\n- The block hides the icon beneath it, so pick two icons that read as a pair (home and away, tick and cross, on and off).\n\n**Mounting**\n- There is a round recess in each rear corner, 5.2 mm across and 2 mm deep, for a **5 mm round magnet** (glue it in), so the board sticks to a fridge or a steel door.\n- Or drill a recess out through the board and use it as a screw hole to hang it on a wall.",
+  "printInstructions": "**Printing**\n- Print the board flat as placed, face up, no supports. The rails are dovetails (the sides slope at 45 degrees), so the undercut needs no support. The text is embossed 1 mm and a 2 mm wide rim stands 1 mm proud round the edge, so the rim and lettering are the same height; the status icons are engraved into the floor of each rail.\n- The ten slider blocks print together, flat on their wide side (the side that faces the rail floor), no supports. Each has a small ridge on top to push with a finger.\n- **Colours:** dark board, light rim, text, icons and blocks. The rim and blocks are their own parts, so a multi-colour (AMS/MMU) print takes them from the 3MF. On a single extruder, change filament at 6.5 mm (where the rim and lettering start) and print the blocks in the second colour.\n\n**Assembly**\n- Each row has a rail with a wider square window midway between its two status icons. Drop a block into the window, then slide it left or right along the rail until it covers one icon. At either end it is held under the sloping edges of the rail, so it cannot lift out, but it can be lifted out in the middle.\n- The fit has 0.3 mm clearance on every side, so a block moves with one finger. If it is tight, rub it on fine sandpaper; if it is loose, print it with a slightly larger scale on the sliding axis, or put a dab of candle wax on the rail.\n- The block hides the icon beneath it, so pick two icons that read as a pair (home and away, tick and cross, on and off).\n\n**Mounting**\n- There is a screw hole in each corner: 4.2 mm through, with an 8.4 mm counterbore 2.5 mm deep on the face for a countersunk or pan head up to 8 mm across. Use all four, or just the top two to hang it.\n- To stick it to a fridge or steel door instead, glue magnets or magnetic tape to the back.",
   "zones": [
     {
       "id": "heading",
