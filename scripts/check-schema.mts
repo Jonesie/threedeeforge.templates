@@ -83,6 +83,9 @@ function check(id: string): string[] {
       const ok = typeof z[k] === 'number' && (z[k] > 0 || (k === 'width' && z.arc && z[k] === 0))
       if (!ok) errs.push(`${at} ${k} must be a positive number`)
     }
+    // Raised detail on a vertical wall has an unsupported underside: the print instructions must say so.
+    if (z.mode === 'emboss' && isVec3(z.normal) && Math.abs(z.normal[2]) < 0.9 && !/support/i.test(t.printInstructions ?? ''))
+      errs.push(`${at} embossed on a non-horizontal face, so printInstructions must say whether supports are needed`)
     if (!Number.isInteger(z.maxLines) || z.maxLines < 1) errs.push(`${at} maxLines must be a positive integer`)
     if (typeof z.default !== 'string') errs.push(`${at} default must be a string`)
     if (z.colour !== undefined && (!Number.isInteger(z.colour) || z.colour < 0 || z.colour >= nColours)) errs.push(`${at} colour index out of range`)

@@ -148,6 +148,13 @@ locally:
   behind its "Print instructions…" link (under the download buttons) and in
   the README inside the STL zip. If you leave `printInstructions` out, the
   link shows `notes` instead, as it used to.
+  Be explicit about supports. Anything *raised* from a vertical (or
+  downward-facing) surface, such as embossed text, adornments, beads or
+  dentils, has an unsupported underside and needs supports switched on
+  (say "everywhere", since "build plate only" will not reach it). Engraving
+  into a vertical wall and anything raised from the top face prints without.
+  `npm run check-schema` fails an embossed zone on a non-horizontal face
+  whose instructions never mention supports.
 
 ## Opening the PR
 
