@@ -94,6 +94,8 @@
     {
       "id": "name1",
       "label": "Row 1 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -206,6 +208,8 @@
     {
       "id": "name2",
       "label": "Row 2 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -318,6 +322,8 @@
     {
       "id": "name3",
       "label": "Row 3 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -430,6 +436,8 @@
     {
       "id": "name4",
       "label": "Row 4 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -542,6 +550,8 @@
     {
       "id": "name5",
       "label": "Row 5 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -654,6 +664,8 @@
     {
       "id": "name6",
       "label": "Row 6 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -766,6 +778,8 @@
     {
       "id": "name7",
       "label": "Row 7 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -878,6 +892,8 @@
     {
       "id": "name8",
       "label": "Row 8 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -990,6 +1006,8 @@
     {
       "id": "name9",
       "label": "Row 9 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [
@@ -1102,6 +1120,8 @@
     {
       "id": "name10",
       "label": "Row 10 name",
+      "kind": "richtext",
+      "align": "left",
       "part": "board",
       "colour": 1,
       "origin": [

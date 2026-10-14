@@ -1613,7 +1613,7 @@ const templates: Tpl[] = [
         z.push(
           { id: `icon${n}`, label: `Row ${n} icon`, kind: 'symbol', part: 'board', colour: 1, origin: [-65, y, T], normal: [0, 0, 1], up: [0, 1, 0],
             width: 12, height: 12, mode: 'emboss', depth: 1, maxLines: 1, default: '' },
-          { id: `name${n}`, label: `Row ${n} name`, part: 'board', colour: 1, origin: [-20, y, T], normal: [0, 0, 1], up: [0, 1, 0],
+          { id: `name${n}`, label: `Row ${n} name`, kind: 'richtext', align: 'left', part: 'board', colour: 1, origin: [-20, y, T], normal: [0, 0, 1], up: [0, 1, 0],
             width: 70, height: 14, mode: 'emboss', depth: 1, maxLines: 1, default: names[i], font: 'Fredoka' },
           { id: `in${n}`, label: `Row ${n} In`, kind: 'symbol', part: 'board', colour: 1, origin: [A, y, FLOOR], normal: [0, 0, 1], up: [0, 1, 0],
             width: 10, height: 10, mode: 'engrave', depth: 0.8, maxLines: 1, default: 'house' },
