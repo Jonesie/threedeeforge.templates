@@ -15,7 +15,7 @@
     "#c0392b"
   ],
   "notes": "A desk stand for a phone, with a name on the base, text on the front and back of the upright and an adornment at each side.",
-  "printInstructions": "Print as placed, base on the bed, no supports.\n\n- The backrest leans 25° and the cable slot under the lip bridges.\n- The raised adornments on the lip face are 1 mm proud and print fine on the vertical face.",
+  "printInstructions": "Print as placed, base on the bed. Turn supports on for the raised adornments, and only for those.\n\n**Supports**\n- The adornments on the lip face are embossed 1 mm on a vertical wall, so the underside of each one is an unsupported overhang and prints ragged without help. Use normal or tree supports with \"everywhere\" (not \"build plate only\": they start on the lip, not the bed), or paint supports onto just the lip face.\n- If you switch the adornments to engraved in the editor, no supports are needed at all.\n- The backrest leans 25° and the cable slot under the lip bridges, so neither needs any.",
   "zones": [
     {
       "id": "name",

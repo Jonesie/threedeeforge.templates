@@ -16,7 +16,7 @@
   ],
   "verified": true,
   "notes": "Cherry MX fit: a 1u cap, 18 mm at the base and 9 mm tall, with a 4.2 x 1.35 mm cross socket.",
-  "printInstructions": "**Printing**\n- Print upside down: top face on the plate, skirt and stem upward. It needs no supports, and the legend comes out crisp off a smooth plate.\n- Keep the legend engraved: embossed text would have to print into the bed.\n- Use 0.12 mm layers.\n\n**Fit**\n- If the switch is tight, file the cross rather than reprinting.",
+  "printInstructions": "**Printing**\n- Print upside down: top face on the plate, skirt and stem upward. It needs no supports, and the legend comes out crisp off a smooth plate.\n- Keep the legend engraved (the default): embossed text would have to print into the bed, and printing the cap the other way up would need supports under the legend.\n- Use 0.12 mm layers.\n\n**Fit**\n- If the switch is tight, file the cross rather than reprinting.",
   "zones": [
     {
       "id": "legend",
@@ -38,7 +38,7 @@
       ],
       "width": 10,
       "height": 10,
-      "mode": "emboss",
+      "mode": "engrave",
       "depth": 1,
       "maxLines": 1,
       "default": "A",
@@ -66,7 +66,7 @@
       ],
       "width": 10,
       "height": 10,
-      "mode": "emboss",
+      "mode": "engrave",
       "depth": 1,
       "maxLines": 1,
       "default": "",
