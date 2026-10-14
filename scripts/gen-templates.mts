@@ -1554,6 +1554,79 @@ const templates: Tpl[] = [
     ],
   },
   {
+    id: 'inout-board',
+    name: 'In/Out Board',
+    tags: ['sign', 'board', 'in-out', 'office', 'medical', 'home', 'wall', 'fridge', 'sliding'],
+    notes: 'An in/out board for a hallway, office door, family fridge or medical practice: a heading, ten rows of name, optional icon and two status icons (In and Out, or any two symbols), and a footer. A sliding block on a rail in each row covers one status icon and leaves the other showing. Ten separate slider blocks print with the board.',
+    printInstructions: '**Printing**\n- Print the board flat as placed, face up, no supports. The rails are dovetails (the sides slope at 45 degrees), so the undercut needs no support. The name text is embossed 1 mm; the status icons are engraved into the floor of each rail.\n- The ten slider blocks print together, flat on their wide side (the side that faces the rail floor), no supports. Each has a small ridge on top to push with a finger.\n- **Colours:** dark board, light text, icons and blocks. The blocks are their own part, so a multi-colour (AMS/MMU) print takes both from the 3MF. On a single extruder, print the board in one colour and the blocks in another.\n\n**Assembly**\n- Each row has a rail with a wider square window midway between its two status icons. Drop a block into the window, then slide it left or right along the rail until it covers one icon. At either end it is held under the sloping edges of the rail, so it cannot lift out, but it can be lifted out in the middle.\n- The fit has 0.3 mm clearance on every side, so a block moves with one finger. If it is tight, rub it on fine sandpaper; if it is loose, print it with a slightly larger scale on the sliding axis, or put a dab of candle wax on the rail.\n- The block hides the icon beneath it, so pick two icons that read as a pair (home and away, tick and cross, on and off).\n\n**Mounting**\n- There is a round recess in each rear corner, 5.2 mm across and 2 mm deep, for a **5 mm round magnet** (glue it in), so the board sticks to a fridge or a steel door.\n- Or drill a recess out through the board and use it as a screw hole to hang it on a wall.',
+    colours: ['#2c3e50', '#f4f4f0'],
+    // 156 x 236 x 6.5, rounded corners. Ten rows at a 19 mm pitch. Each row has a dovetail rail (12 mm opening at the face, 17 mm at the floor, 2.5 mm deep) from x = 24.7 to 69.3, with a 17.4 x 19 mm window cut to the floor midway between the two status icons, where a block drops in. Blocks have 0.3 mm clearance all round and print on their wide side.
+    // Four 5.2 mm x 2 mm magnet recesses in the corners of the back (z = 0), open to the bed so they print without supports.
+    parts: [
+      { id: 'board', label: 'Board', colour: 0 },
+      { id: 'blocks', label: 'Slider blocks (10)', colour: 1 },
+    ],
+    build: () => {
+      const W = 156, H = 236, T = 6.5, D = 2.5, FLOOR = T - D
+      const ROWS = 10, PITCH = 19, Y0 = 80
+      const A = 34, B = 60, C = (A + B) / 2           // status icon centres, and the window between them
+      const BL = 18                                      // block length
+      const CLR = 0.3
+      const railX0 = A - BL / 2 - CLR, railX1 = B + BL / 2 + CLR
+      const OPEN = 12, FOOT = OPEN + 2 * D              // 45 degree sides: 17 mm at the floor
+      // Slot cross-section across the rail: x = across (rows' y), y = height above the floor.
+      const slotProfile = CrossSection.ofPolygons([[[-FOOT / 2, 0], [FOOT / 2, 0], [OPEN / 2, D], [-OPEN / 2, D]]])
+      const blockProfile = slotProfile.offset(-CLR, 'Miter', 2, 32)
+      // A prism along X from a (across, up) profile: extrude along Z, then lay Z onto X.
+      const along = (prof: CrossSection, len: number) => Manifold.extrude(prof, len).rotate(90, 0, 90)
+      const rowY = (i: number) => Y0 - i * PITCH
+
+      const outline = roundedRect(W, H, 6)
+      const pockets = Manifold.union(
+        [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy]) =>
+          Manifold.cylinder(2 + 1, 2.6, 2.6, 48).translate(sx * 70, sy * 110, -1)))
+      const cuts: M[] = []
+      for (let i = 0; i < ROWS; i++) {
+        cuts.push(along(slotProfile, railX1 - railX0).translate(railX0, rowY(i), FLOOR))
+        cuts.push(Manifold.cube([BL + 2 * CLR, FOOT + 0.4, D + 1], false).translate(C - (BL + 2 * CLR) / 2, rowY(i) - (FOOT + 0.4) / 2, FLOOR))
+      }
+      const board = Manifold.extrude(outline, T).subtract(pockets).subtract(Manifold.union(cuts))
+
+      // A block: the dovetail prism with a grip ridge. It starts 0.3 above the rail floor and ends 0.3 below the board face.
+      const ridge = Manifold.cube([5, OPEN - 4, 0.8], false).translate(BL / 2 - 2.5, -(OPEN - 4) / 2, D - 2 * CLR)
+      const block = Manifold.union(along(blockProfile, BL), ridge)
+      // blockProfile sits at y = CLR.. (offset keeps it centred on the slot, i.e. already 0.3 above the floor).
+      const blocks = Manifold.union(Array.from({ length: ROWS }, (_, i) =>
+        block.translate(i % 2 ? B - BL / 2 : A - BL / 2, rowY(i), FLOOR)))
+      return { board, blocks }
+    },
+    zones: (() => {
+      const T = 6.5, FLOOR = 4, ROWS = 10, PITCH = 19, Y0 = 80
+      const A = 34, B = 60
+      const names = ['Dr Patel', 'Dr Nguyen', 'Dr Jones', 'Dr Williams', 'Dr Singh', 'Nurse Amy', 'Nurse Tom', 'Nurse Priya', 'Physio Sam', 'Reception']
+      const z: Zone[] = [
+        { id: 'heading', label: 'Heading', part: 'board', colour: 1, origin: [0, 102, T], normal: [0, 0, 1], up: [0, 1, 0],
+          width: 124, height: 20, mode: 'emboss', depth: 1, maxLines: 1, default: 'Sunnyside Medical Centre', font: 'Fredoka' },
+      ]
+      for (let i = 0; i < ROWS; i++) {
+        const n = String(i + 1), y = Y0 - i * PITCH
+        z.push(
+          { id: `icon${n}`, label: `Row ${n} icon`, kind: 'symbol', part: 'board', colour: 1, origin: [-65, y, T], normal: [0, 0, 1], up: [0, 1, 0],
+            width: 12, height: 12, mode: 'emboss', depth: 1, maxLines: 1, default: '' },
+          { id: `name${n}`, label: `Row ${n} name`, kind: 'richtext', align: 'left', part: 'board', colour: 1, origin: [-20, y, T], normal: [0, 0, 1], up: [0, 1, 0],
+            width: 70, height: 14, mode: 'emboss', depth: 1, maxLines: 1, default: names[i], font: 'Fredoka' },
+          { id: `in${n}`, label: `Row ${n} In`, kind: 'symbol', part: 'board', colour: 1, origin: [A, y, FLOOR], normal: [0, 0, 1], up: [0, 1, 0],
+            width: 10, height: 10, mode: 'engrave', depth: 0.8, maxLines: 1, default: 'house' },
+          { id: `out${n}`, label: `Row ${n} Out`, kind: 'symbol', part: 'board', colour: 1, origin: [B, y, FLOOR], normal: [0, 0, 1], up: [0, 1, 0],
+            width: 10, height: 10, mode: 'engrave', depth: 0.8, maxLines: 1, default: 'bicycle' },
+        )
+      }
+      z.push({ id: 'footer', label: 'Footer', part: 'board', colour: 1, origin: [0, -109, T], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 120, height: 12, mode: 'emboss', depth: 1, maxLines: 1, default: 'Please ask at reception', font: 'Fredoka' })
+      return z
+    })(),
+  },
+  {
     id: 'picture-frame',
     name: 'Picture Frame',
     tags: ['frame', 'photo', 'home', 'gift'],
