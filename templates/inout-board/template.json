@@ -28,6 +28,18 @@
       "mesh": "rim.glb"
     },
     {
+      "id": "ticks",
+      "label": "Ticks (10)",
+      "colour": 2,
+      "mesh": "ticks.glb"
+    },
+    {
+      "id": "crosses",
+      "label": "Crosses (10)",
+      "colour": 3,
+      "mesh": "crosses.glb"
+    },
+    {
       "id": "blocks",
       "label": "Slider blocks (10)",
       "colour": 1,
@@ -36,10 +48,12 @@
   ],
   "colours": [
     "#2c3e50",
-    "#f4f4f0"
+    "#f4f4f0",
+    "#27ae60",
+    "#c0392b"
   ],
-  "notes": "An in/out board for a hallway, office door, family fridge or medical practice: a heading, ten rows of name, optional icon and two status icons (In and Out, or any two symbols), and a footer. A sliding block on a rail in each row covers one status icon and leaves the other showing. Ten separate slider blocks print with the board.",
-  "printInstructions": "**Printing**\n- Print the board flat as placed, face up, no supports. The rails are dovetails (the sides slope at 45 degrees), so the undercut needs no support. The text is embossed 1 mm, and a 2 mm wide rim stands 1 mm proud round the edge, joined to a raised panel across the top behind the heading. The panel, rim and lettering are all the same height. The heading is engraved right through the panel, so it shows the board colour; the status icons are engraved into the floor of each rail.\n- The ten slider blocks print together, flat on their wide side (the side that faces the rail floor), no supports. Each has a small ridge on top to push with a finger.\n- **Colours:** dark board and heading lettering; light rim, heading panel, text, icons and blocks. The rim (with the panel) and the blocks are their own parts, so a multi-colour (AMS/MMU) print takes them from the 3MF. On a single extruder, change filament at 6.5 mm (where the rim and lettering start) and print the blocks in the second colour.\n\n**Assembly**\n- Each row has a rail with a wider square window midway between its two status icons. Drop a block into the window, then slide it left or right along the rail until it covers one icon. At either end it is held under the sloping edges of the rail, so it cannot lift out, but it can be lifted out in the middle.\n- The fit has 0.3 mm clearance on every side, so a block moves with one finger. If it is tight, rub it on fine sandpaper; if it is loose, print it with a slightly larger scale on the sliding axis, or put a dab of candle wax on the rail.\n- The block hides the icon beneath it, so pick two icons that read as a pair (home and away, tick and cross, on and off).\n\n**Mounting**\n- There is a screw hole in each corner: 4.2 mm through, with an 8.4 mm counterbore 2.5 mm deep on the face for a countersunk or pan head up to 8 mm across. Use all four, or just the top two to hang it.\n- To stick it to a fridge or steel door instead, glue magnets or magnetic tape to the back.",
+  "notes": "An in/out board for a hallway, office door, family fridge or medical practice: a heading, ten rows of name, optional icon and a green tick (In) and a red cross (Out), and a footer. A sliding block on a rail in each row covers the tick or the cross and leaves the other showing. Ten separate slider blocks print with the board.",
+  "printInstructions": "**Printing**\n- Print the board flat as placed, face up, no supports. The rails are dovetails (the sides slope at 45 degrees), so the undercut needs no support. The text is embossed 1 mm, and a 2 mm wide rim stands 1 mm proud round the edge, joined to a raised panel across the top behind the heading. The panel, rim and lettering are all the same height. The heading is engraved right through the panel, so it shows the board colour; the tick and cross in each rail are separate thin parts that sit flush in recesses in the rail floor.\n- The ten slider blocks print together, flat on their wide side (the side that faces the rail floor), no supports. Each has a small ridge on top to push with a finger.\n- **Colours:** dark board and heading lettering; light rim, heading panel, text, icons and blocks; green ticks and red crosses. The rim (with the panel), the ticks, the crosses and the blocks are their own parts, so a multi-colour (AMS/MMU) print takes them from the 3MF. On a single extruder, change filament at 6.5 mm (where the rim and lettering start) and print the blocks in the second colour.\n\n**Assembly**\n- Each row has a rail with a wider square window midway between the tick and the cross. Drop a block into the window, then slide it left or right along the rail until it covers one of them. Cover the cross to show the tick (In); cover the tick to show the cross (Out). At either end it is held under the sloping edges of the rail, so it cannot lift out, but it can be lifted out in the middle.\n- The fit has 0.3 mm clearance on every side, so a block moves with one finger. If it is tight, rub it on fine sandpaper; if it is loose, print it with a slightly larger scale on the sliding axis, or put a dab of candle wax on the rail.\n\n**Mounting**\n- There is a screw hole in each corner: 4.2 mm through, with an 8.4 mm counterbore 2.5 mm deep on the face for a countersunk or pan head up to 8 mm across. Use all four, or just the top two to hang it.\n- To stick it to a fridge or steel door instead, glue magnets or magnetic tape to the back.",
   "zones": [
     {
       "id": "heading",
@@ -128,62 +142,6 @@
       "font": "Fredoka"
     },
     {
-      "id": "in1",
-      "label": "Row 1 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        80,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out1",
-      "label": "Row 1 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        80,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
-    },
-    {
       "id": "icon2",
       "label": "Row 2 icon",
       "kind": "symbol",
@@ -240,62 +198,6 @@
       "maxLines": 1,
       "default": "Dr Nguyen",
       "font": "Fredoka"
-    },
-    {
-      "id": "in2",
-      "label": "Row 2 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        61,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out2",
-      "label": "Row 2 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        61,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
     },
     {
       "id": "icon3",
@@ -356,62 +258,6 @@
       "font": "Fredoka"
     },
     {
-      "id": "in3",
-      "label": "Row 3 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        42,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out3",
-      "label": "Row 3 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        42,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
-    },
-    {
       "id": "icon4",
       "label": "Row 4 icon",
       "kind": "symbol",
@@ -468,62 +314,6 @@
       "maxLines": 1,
       "default": "Dr Williams",
       "font": "Fredoka"
-    },
-    {
-      "id": "in4",
-      "label": "Row 4 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        23,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out4",
-      "label": "Row 4 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        23,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
     },
     {
       "id": "icon5",
@@ -584,62 +374,6 @@
       "font": "Fredoka"
     },
     {
-      "id": "in5",
-      "label": "Row 5 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        4,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out5",
-      "label": "Row 5 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        4,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
-    },
-    {
       "id": "icon6",
       "label": "Row 6 icon",
       "kind": "symbol",
@@ -696,62 +430,6 @@
       "maxLines": 1,
       "default": "Nurse Amy",
       "font": "Fredoka"
-    },
-    {
-      "id": "in6",
-      "label": "Row 6 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        -15,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out6",
-      "label": "Row 6 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        -15,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
     },
     {
       "id": "icon7",
@@ -812,62 +490,6 @@
       "font": "Fredoka"
     },
     {
-      "id": "in7",
-      "label": "Row 7 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        -34,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out7",
-      "label": "Row 7 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        -34,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
-    },
-    {
       "id": "icon8",
       "label": "Row 8 icon",
       "kind": "symbol",
@@ -924,62 +546,6 @@
       "maxLines": 1,
       "default": "Nurse Priya",
       "font": "Fredoka"
-    },
-    {
-      "id": "in8",
-      "label": "Row 8 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        -53,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out8",
-      "label": "Row 8 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        -53,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
     },
     {
       "id": "icon9",
@@ -1040,62 +606,6 @@
       "font": "Fredoka"
     },
     {
-      "id": "in9",
-      "label": "Row 9 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        -72,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out9",
-      "label": "Row 9 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        -72,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
-    },
-    {
       "id": "icon10",
       "label": "Row 10 icon",
       "kind": "symbol",
@@ -1152,62 +662,6 @@
       "maxLines": 1,
       "default": "Reception",
       "font": "Fredoka"
-    },
-    {
-      "id": "in10",
-      "label": "Row 10 In",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        34,
-        -91,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "house"
-    },
-    {
-      "id": "out10",
-      "label": "Row 10 Out",
-      "kind": "symbol",
-      "part": "board",
-      "colour": 1,
-      "origin": [
-        60,
-        -91,
-        4
-      ],
-      "normal": [
-        0,
-        0,
-        1
-      ],
-      "up": [
-        0,
-        1,
-        0
-      ],
-      "width": 10,
-      "height": 10,
-      "mode": "engrave",
-      "depth": 0.8,
-      "maxLines": 1,
-      "default": "bicycle"
     },
     {
       "id": "footer",

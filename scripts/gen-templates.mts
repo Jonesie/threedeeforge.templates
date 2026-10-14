@@ -1557,15 +1557,17 @@ const templates: Tpl[] = [
     id: 'inout-board',
     name: 'In/Out Board',
     tags: ['sign', 'board', 'in-out', 'office', 'medical', 'home', 'wall', 'fridge', 'sliding'],
-    notes: 'An in/out board for a hallway, office door, family fridge or medical practice: a heading, ten rows of name, optional icon and two status icons (In and Out, or any two symbols), and a footer. A sliding block on a rail in each row covers one status icon and leaves the other showing. Ten separate slider blocks print with the board.',
-    printInstructions: '**Printing**\n- Print the board flat as placed, face up, no supports. The rails are dovetails (the sides slope at 45 degrees), so the undercut needs no support. The text is embossed 1 mm, and a 2 mm wide rim stands 1 mm proud round the edge, joined to a raised panel across the top behind the heading. The panel, rim and lettering are all the same height. The heading is engraved right through the panel, so it shows the board colour; the status icons are engraved into the floor of each rail.\n- The ten slider blocks print together, flat on their wide side (the side that faces the rail floor), no supports. Each has a small ridge on top to push with a finger.\n- **Colours:** dark board and heading lettering; light rim, heading panel, text, icons and blocks. The rim (with the panel) and the blocks are their own parts, so a multi-colour (AMS/MMU) print takes them from the 3MF. On a single extruder, change filament at 6.5 mm (where the rim and lettering start) and print the blocks in the second colour.\n\n**Assembly**\n- Each row has a rail with a wider square window midway between its two status icons. Drop a block into the window, then slide it left or right along the rail until it covers one icon. At either end it is held under the sloping edges of the rail, so it cannot lift out, but it can be lifted out in the middle.\n- The fit has 0.3 mm clearance on every side, so a block moves with one finger. If it is tight, rub it on fine sandpaper; if it is loose, print it with a slightly larger scale on the sliding axis, or put a dab of candle wax on the rail.\n- The block hides the icon beneath it, so pick two icons that read as a pair (home and away, tick and cross, on and off).\n\n**Mounting**\n- There is a screw hole in each corner: 4.2 mm through, with an 8.4 mm counterbore 2.5 mm deep on the face for a countersunk or pan head up to 8 mm across. Use all four, or just the top two to hang it.\n- To stick it to a fridge or steel door instead, glue magnets or magnetic tape to the back.',
-    colours: ['#2c3e50', '#f4f4f0'],
+    notes: 'An in/out board for a hallway, office door, family fridge or medical practice: a heading, ten rows of name, optional icon and a green tick (In) and a red cross (Out), and a footer. A sliding block on a rail in each row covers the tick or the cross and leaves the other showing. Ten separate slider blocks print with the board.',
+    printInstructions: '**Printing**\n- Print the board flat as placed, face up, no supports. The rails are dovetails (the sides slope at 45 degrees), so the undercut needs no support. The text is embossed 1 mm, and a 2 mm wide rim stands 1 mm proud round the edge, joined to a raised panel across the top behind the heading. The panel, rim and lettering are all the same height. The heading is engraved right through the panel, so it shows the board colour; the tick and cross in each rail are separate thin parts that sit flush in recesses in the rail floor.\n- The ten slider blocks print together, flat on their wide side (the side that faces the rail floor), no supports. Each has a small ridge on top to push with a finger.\n- **Colours:** dark board and heading lettering; light rim, heading panel, text, icons and blocks; green ticks and red crosses. The rim (with the panel), the ticks, the crosses and the blocks are their own parts, so a multi-colour (AMS/MMU) print takes them from the 3MF. On a single extruder, change filament at 6.5 mm (where the rim and lettering start) and print the blocks in the second colour.\n\n**Assembly**\n- Each row has a rail with a wider square window midway between the tick and the cross. Drop a block into the window, then slide it left or right along the rail until it covers one of them. Cover the cross to show the tick (In); cover the tick to show the cross (Out). At either end it is held under the sloping edges of the rail, so it cannot lift out, but it can be lifted out in the middle.\n- The fit has 0.3 mm clearance on every side, so a block moves with one finger. If it is tight, rub it on fine sandpaper; if it is loose, print it with a slightly larger scale on the sliding axis, or put a dab of candle wax on the rail.\n\n**Mounting**\n- There is a screw hole in each corner: 4.2 mm through, with an 8.4 mm counterbore 2.5 mm deep on the face for a countersunk or pan head up to 8 mm across. Use all four, or just the top two to hang it.\n- To stick it to a fridge or steel door instead, glue magnets or magnetic tape to the back.',
+    colours: ['#2c3e50', '#f4f4f0', '#27ae60', '#c0392b'],
     // 156 x 236 x 6.5, rounded corners. Ten rows at a 19 mm pitch. Each row has a dovetail rail (12 mm opening at the face, 17 mm at the floor, 2.5 mm deep) from x = 24.7 to 69.3, with a 17.4 x 19 mm window cut to the floor midway between the two status icons, where a block drops in. Blocks have 0.3 mm clearance all round and print on their wide side.
     // A 2 mm wide, 1 mm tall rim stands on the top face round the edge, joined to a 1 mm raised panel behind the heading (one part, second colour). The heading is engraved through the panel so the dark board shows as the lettering; the other text is embossed to the same height.
     // Four screw holes in the corners (4.2 mm, counterbored 8.4 x 2.5 mm from the face), clear of the rim.
     parts: [
       { id: 'board', label: 'Board', colour: 0 },
       { id: 'rim', label: 'Rim', colour: 1 },
+      { id: 'ticks', label: 'Ticks (10)', colour: 2 },
+      { id: 'crosses', label: 'Crosses (10)', colour: 3 },
       { id: 'blocks', label: 'Slider blocks (10)', colour: 1 },
     ],
     build: () => {
@@ -1594,7 +1596,17 @@ const templates: Tpl[] = [
         cuts.push(along(slotProfile, railX1 - railX0).translate(railX0, rowY(i), FLOOR))
         cuts.push(Manifold.cube([BL + 2 * CLR, FOOT + 0.4, D + 1], false).translate(C - (BL + 2 * CLR) / 2, rowY(i) - (FOOT + 0.4) / 2, FLOOR))
       }
-      const board = Manifold.extrude(outline, T).subtract(screws).subtract(Manifold.union(cuts))
+      // Hard-coded status marks: a tick over A (In) and a cross over B (Out), 0.8 mm thick, as separate parts flush in matching recesses in the rail floor.
+      const MARK = 0.8
+      const bar = (x0: number, y0: number, x1: number, y1: number, w: number) =>
+        CrossSection.square([Math.hypot(x1 - x0, y1 - y0), w], true).rotate((Math.atan2(y1 - y0, x1 - x0) * 180) / Math.PI).translate((x0 + x1) / 2, (y0 + y1) / 2)
+      const dot = (x: number, y: number, r: number) => CrossSection.circle(r, 24).translate(x, y)
+      const tick = CrossSection.union([bar(-4.5, 0, -1.5, -3.5, 2.2), bar(-1.5, -3.5, 4.5, 4.5, 2.2), dot(-4.5, 0, 1.1), dot(-1.5, -3.5, 1.1), dot(4.5, 4.5, 1.1)])
+      const cross = CrossSection.union([bar(-3.5, -3.5, 3.5, 3.5, 2.2), bar(-3.5, 3.5, 3.5, -3.5, 2.2), dot(-3.5, -3.5, 1.1), dot(3.5, 3.5, 1.1), dot(-3.5, 3.5, 1.1), dot(3.5, -3.5, 1.1)])
+      const marks = (shape: CrossSection, x: number) => Manifold.union(Array.from({ length: ROWS }, (_, i) =>
+        Manifold.extrude(shape.translate(x, rowY(i)), MARK).translate(0, 0, FLOOR - MARK)))
+      const ticks = marks(tick, A), crosses = marks(cross, B)
+      const board = Manifold.extrude(outline, T).subtract(screws).subtract(Manifold.union(cuts)).subtract(ticks).subtract(crosses)
 
       // A block: the dovetail prism with a grip ridge. It starts 0.3 above the rail floor and ends 0.3 below the board face.
       const ridge = Manifold.cube([5, OPEN - 4, 0.8], false).translate(BL / 2 - 2.5, -(OPEN - 4) / 2, D - 2 * CLR)
@@ -1606,11 +1618,10 @@ const templates: Tpl[] = [
       const ring = outline.subtract(outline.offset(-2, 'Round', 2, 32))
       const panel = outline.intersect(CrossSection.square([W, H / 2 - 90], false).translate(-W / 2, 90))
       const rim = Manifold.extrude(CrossSection.union(ring, panel), 1).translate(0, 0, T).subtract(screws)
-      return { board, rim, blocks }
+      return { board, rim, ticks, crosses, blocks }
     },
     zones: (() => {
-      const T = 6.5, FLOOR = 4, ROWS = 10, PITCH = 19, Y0 = 80
-      const A = 34, B = 60
+      const T = 6.5, ROWS = 10, PITCH = 19, Y0 = 80
       const names = ['Dr Patel', 'Dr Nguyen', 'Dr Jones', 'Dr Williams', 'Dr Singh', 'Nurse Amy', 'Nurse Tom', 'Nurse Priya', 'Physio Sam', 'Reception']
       const z: Zone[] = [
         { id: 'heading', label: 'Heading', part: 'rim', colour: 0, origin: [0, 102, T + 1], normal: [0, 0, 1], up: [0, 1, 0],
@@ -1623,10 +1634,6 @@ const templates: Tpl[] = [
             width: 12, height: 12, mode: 'emboss', depth: 1, maxLines: 1, default: '' },
           { id: `name${n}`, label: `Row ${n} name`, kind: 'richtext', align: 'left', part: 'board', colour: 1, origin: [-20, y, T], normal: [0, 0, 1], up: [0, 1, 0],
             width: 70, height: 14, mode: 'emboss', depth: 1, maxLines: 1, default: names[i], font: 'Fredoka' },
-          { id: `in${n}`, label: `Row ${n} In`, kind: 'symbol', part: 'board', colour: 1, origin: [A, y, FLOOR], normal: [0, 0, 1], up: [0, 1, 0],
-            width: 10, height: 10, mode: 'engrave', depth: 0.8, maxLines: 1, default: 'house' },
-          { id: `out${n}`, label: `Row ${n} Out`, kind: 'symbol', part: 'board', colour: 1, origin: [B, y, FLOOR], normal: [0, 0, 1], up: [0, 1, 0],
-            width: 10, height: 10, mode: 'engrave', depth: 0.8, maxLines: 1, default: 'bicycle' },
         )
       }
       z.push({ id: 'footer', label: 'Footer', part: 'board', colour: 1, origin: [0, -109, T], normal: [0, 0, 1], up: [0, 1, 0],
