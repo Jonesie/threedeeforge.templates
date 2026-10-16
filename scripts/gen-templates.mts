@@ -93,12 +93,12 @@ function borderPattern(): { corners: XY[]; sides: XY[]; edges: XY[] } {
  */
 const PS_BASE_T = 4, PS_LEAN = 25, PS_UP_T = 6, PS_LIP_Y = [-40, -32], PS_CLEAR = 0.15
 const PS_UP_TABS: [number, number][] = [[-24, -10], [10, 24]] // upright tab x ranges
-const PS_LIP_TABS: [number, number][] = [[-28, -12], [12, 28]] // lip tab x ranges
+const PS_LIP_TABS: [number, number][] = [[-31, -15], [15, 31]] // tab x range of the left and right lip pieces
 /** `classic` is the plain stand; `grave` has a domed headstone, a shorter base with a rim, and no knurling or grooves. */
-interface PsVariant { topR: number; baseFront: number; knurl: boolean; moundR: number; groove: boolean; rim: number; domeH: number }
+interface PsVariant { topR: number; baseFront: number; knurl: boolean; moundR: number; groove: boolean; rim: number; domeH: number; upH: number; baseRear: number }
 const PS_VARIANTS = {
-  classic: { topR: 8, baseFront: -52, knurl: true, moundR: 0, groove: true, rim: 0, domeH: 0 },
-  grave: { topR: 35, baseFront: -45, knurl: false, moundR: 3, groove: false, rim: 4, domeH: 2.5 },
+  classic: { topR: 8, baseFront: -52, knurl: true, moundR: 0, groove: true, rim: 0, domeH: 0, upH: 72, baseRear: 50 },
+  grave: { topR: 35, baseFront: -45, knurl: false, moundR: 3, groove: false, rim: 4, domeH: 2.5, upH: 72, baseRear: 50 },
 } satisfies Record<string, PsVariant>
 const psCache: Partial<Record<keyof typeof PS_VARIANTS, ReturnType<typeof phoneStandPartsBuild>>> = {}
 const phoneStandParts = (v: keyof typeof PS_VARIANTS = 'classic') => (psCache[v] ??= phoneStandPartsBuild(PS_VARIANTS[v]))
@@ -110,9 +110,9 @@ function phoneStandPartsBuild(variant: PsVariant) {
     Manifold.cube([xs[1] - xs[0] + 2 * grow, v[1] - v[0], PS_UP_T + 2 * grow]).translate(xs[0] - grow, v[0], -grow)
   // A full semicircular arch (topR 35 = half the width), or rounded top corners.
   const profile = variant.topR >= 35
-    ? CrossSection.union(CrossSection.circle(35, 96).translate(0, 27), CrossSection.square([70, 27]).translate(-35, 0))
+    ? CrossSection.union(CrossSection.circle(35, 96).translate(0, variant.upH - 35), CrossSection.square([70, variant.upH - 35]).translate(-35, 0))
     : CrossSection.union(
-        roundedRect(70, 62, variant.topR).translate(0, 31),
+        roundedRect(70, variant.upH, variant.topR).translate(0, variant.upH / 2),
         CrossSection.square([70, 20], true).translate(0, 10),
       )
   const box = (z0: number, z1: number) => Manifold.cube([300, 300, z1 - z0]).translate(-150, -150, z0)
@@ -122,16 +122,16 @@ function phoneStandPartsBuild(variant: PsVariant) {
 
   // Lip, standing in place on the base: y in PS_LIP_Y, z 4..18, tabs below.
   const [ly0, ly1] = PS_LIP_Y
-  // Front-face outline in XZ with rounded top corners (the bottom is cut flat on the base).
-  const lipFace = roundedRect(70, 28, 5).translate(0, 4)
-  const lipBlock = Manifold.extrude(lipFace, ly1 - ly0).rotate(90, 0, 0).translate(0, ly1, 0)
+  // Two separate end blocks, 24 wide, leaving a 22 mm gap in the middle so the charging plug goes
+  // in from the front with nothing to thread through. Rounded top corners; the bottom is cut flat on the base.
+  const PS_LIP_W = 24, PS_LIP_C = 23
+  const pieceFace = roundedRect(PS_LIP_W, 28, 5).translate(0, 4)
   const lipTab = (grow: number) => Manifold.union(PS_LIP_TABS.map(([x0, x1]) =>
     Manifold.cube([x1 - x0 + 2 * grow, ly1 - ly0 + 2 * grow, PS_BASE_T + 2]).translate(x0 - grow, ly0 - grow, -1)))
-  const notch = Manifold.cube([14, 12, 8]).translate(-7, ly0 - 2, PS_BASE_T - 0.01)
-  const lip = Manifold.union(
-    lipBlock.intersect(box(PS_BASE_T, 100)),
-    lipTab(0).intersect(box(0.2, PS_BASE_T + 0.01)),
-  ).subtract(notch)
+  const lipPiece = (side: -1 | 1) => Manifold.union(
+    Manifold.extrude(pieceFace, ly1 - ly0).rotate(90, 0, 0).translate(side * PS_LIP_C, ly1, 0).intersect(box(PS_BASE_T, 100)),
+    Manifold.cube([PS_LIP_TABS[0][1] - PS_LIP_TABS[0][0], ly1 - ly0, 10]).translate(PS_LIP_TABS[side < 0 ? 0 : 1][0], ly0, 0).intersect(box(0.2, PS_BASE_T + 0.01)),
+  )
 
   // Lay flat, face up. Front faces (normal -Y) go to +Z via rotate(-90,0,0).
   const lay = (m: M, x: number) => {
@@ -140,7 +140,10 @@ function phoneStandPartsBuild(variant: PsVariant) {
     return { solid: r.translate(x - (bb.min[0] + bb.max[0]) / 2, -52 - bb.min[1], -bb.min[2]), dy: -52 - bb.min[1], h: bb.max[2] - bb.min[2] }
   }
   const up = lay(upright.translate(0, -24, -2.6).rotate(PS_LEAN, 0, 0), 85)
-  const lp = lay(lip, 165)
+  const LIP_L_X = 150, LIP_R_X = 180
+  const lpL = lay(lipPiece(-1), LIP_L_X)
+  const lpR = lay(lipPiece(1), LIP_R_X)
+  const lp = lpL
 
   // Decoration, in the flat frame (x + 85, v + dy). A 2 mm groove 1 mm deep
   // round both faces, just outside the text area, and a cross-hatch knurl
@@ -157,10 +160,7 @@ function phoneStandPartsBuild(variant: PsVariant) {
       CrossSection.square([2, 6]).translate(29.5, -2),
     ),
   ))
-  const grooves = Manifold.union(
-    Manifold.extrude(groove2d, 1.5).translate(0, 0, PS_UP_T - 1),
-    Manifold.extrude(groove2d, 1.5).translate(0, 0, -0.5),
-  )
+  const grooves = Manifold.extrude(groove2d, 1.5).translate(0, 0, PS_UP_T - 1) // front face only
   // Cross-hatch knurl on a piece's outer edge wall: two sets of diagonal
   // 0.7 mm cuts, 0.7 mm deep, only on walls above minY (clear of the tabs).
   const hatchPlane = (n: [number, number, number], c: number) => {
@@ -168,7 +168,7 @@ function phoneStandPartsBuild(variant: PsVariant) {
     let u = [nn[1], -nn[0], 0]; const ul = Math.hypot(u[0], u[1]); u = u.map((k) => k / ul)
     const v = [nn[1] * u[2] - nn[2] * u[1], nn[2] * u[0] - nn[0] * u[2], nn[0] * u[1] - nn[1] * u[0]]
     const t = nn.map((k) => k * c)
-    return Manifold.cube([300, 300, 0.7], true).transform([u[0], u[1], u[2], 0, v[0], v[1], v[2], 0, nn[0], nn[1], nn[2], 0, t[0], t[1], t[2], 1])
+    return Manifold.cube([1000, 1000, 0.7], true).transform([u[0], u[1], u[2], 0, v[0], v[1], v[2], 0, nn[0], nn[1], nn[2], 0, t[0], t[1], t[2], 1])
   }
   const knurl = (solid: M, outline: typeof profile, minY: number) => {
     const bb = solid.boundingBox()
@@ -187,7 +187,7 @@ function phoneStandPartsBuild(variant: PsVariant) {
 
   // Matching 2 mm groove in the base top: up each side from behind the lip and
   // across the back, lined up with the upright's side runs.
-  const baseOutline = roundedRect(70, 40 - variant.baseFront, 8).translate(0, (40 + variant.baseFront) / 2)
+  const baseOutline = roundedRect(70, variant.baseRear - variant.baseFront, 8).translate(0, (variant.baseRear + variant.baseFront) / 2)
   const baseGroove = baseOutline.offset(-3.5, 'Round', 2, 32).subtract(baseOutline.offset(-5.5, 'Round', 2, 32))
     .intersect(CrossSection.square([100, 80]).translate(-50, ly1 + 2))
   // Top edge rounded off (a quarter circle of radius moundR, in 0.5 mm steps) so the grave base reads as a mound.
@@ -202,12 +202,10 @@ function phoneStandPartsBuild(variant: PsVariant) {
     }),
   ])
   const baseBody = (variant.groove ? baseSolid.subtract(Manifold.extrude(baseGroove, 1.5).translate(0, 0, PS_BASE_T - 1)) : baseSolid)
-    .subtract(Manifold.cube([14, 12, 10]).translate(-7, ly0 - 2, -2)) // cable hole
-    .subtract(Manifold.cube([6, 72, 2.2]).translate(-3, ly0 + 9, -0.2)) // cable channel under the base, hole to rear edge
     .subtract(lipTab(PS_CLEAR))
     .subtract(upTabs(PS_CLEAR).intersect(box(-1, 5)))
   const baseKnurled = variant.knurl ? knurl(baseBody, baseOutline, -100) : baseBody
-  const lipKnurled = variant.knurl ? knurl(lp.solid, lipFace.translate(165, lp.dy), -52 + 4.5) : lp.solid
+  const knurlLip = (m: M, x: number) => variant.knurl ? knurl(m, pieceFace.translate(x, lp.dy), -52 + 4.5) : m
   // With a rim, the base is split into a rim and a flush interior (grass) so each can take its own colour.
   const grassCut = variant.rim ? Manifold.extrude(baseOutline.offset(-variant.rim, 'Round', 2, 32), 20).translate(0, 0, -5) : undefined
   let grass = grassCut ? baseKnurled.intersect(grassCut) : undefined
@@ -219,7 +217,7 @@ function phoneStandPartsBuild(variant: PsVariant) {
     let seed = 12345
     const rnd = () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
     const blades: M[] = []
-    for (let gx = -29; gx <= 29; gx += 3.2) for (let gy = -39; gy <= 34; gy += 3.2) {
+    for (let gx = -29; gx <= 29; gx += 3.2) for (let gy = -39; gy <= variant.baseRear - 6; gy += 3.2) {
       const x = gx + (rnd() - 0.5) * 2.4, y = gy + (rnd() - 0.5) * 2.4
       const a = rnd() * 24 - 12, b = rnd() * 24 - 12, h = 1.1 + rnd() * 0.6
       if ((y > 20 && y < 35) || (y > ly0 - 3 && y < ly1 + 1)) continue // upright and lip footprints
@@ -228,7 +226,7 @@ function phoneStandPartsBuild(variant: PsVariant) {
     grass = Manifold.union([grass, dome.intersect(grassCut!), Manifold.union(blades).intersect(grassCut!)])
   }
   const rimmed = grassCut ? baseKnurled.subtract(grassCut) : baseKnurled
-  return { base: rimmed, grass, upright: upFlat, lip: lipKnurled, upH: up.h, lipH: lp.h, upDy: up.dy, lipDy: lp.dy, upX: 85, lipX: 165 }
+  return { base: rimmed, grass, upright: upFlat, lipL: knurlLip(lpL.solid, LIP_L_X), lipR: knurlLip(lpR.solid, LIP_R_X), upH: up.h, lipH: lp.h, upDy: up.dy, lipDy: lp.dy, upX: 85, lipLX: LIP_L_X, lipRX: LIP_R_X }
 }
 
 const templates: Tpl[] = [
@@ -791,22 +789,23 @@ const templates: Tpl[] = [
     id: 'phone-stand',
     name: 'Phone Stand',
     tags: ['desk', 'phone', 'gift'],
-    notes: 'A desk stand for a phone, with a name on the base, text on the front and back of the upright and an adornment at each side.',
-    printInstructions: 'Three flat prints, no supports, all as placed.\n\n**Printing**\n- Print the base, the tall back upright and the short front lip flat on the bed, no supports.\n- The lip lies on its back with the adornments face up, so they print without supports.\n- The upright lies with its front text face up. Its back text is engraved into the face on the bed, so use a smooth plate for a clean finish.\n\n**Assembly**\n- Push the tabs on the upright and the lip down through the slots in the base. The upright leans back 25°.\n- They are a friction fit and come apart again; add a dot of glue if you want it permanent.',
+    notes: 'A desk stand for a phone, with a name on the base, text on the front of the upright and an adornment at each side, and a gap between the two lip blocks for the charging plug.',
+    printInstructions: 'Four flat prints, no supports, all as placed.\n\n**Printing**\n- Print the base, the tall back upright and the two front lip blocks flat on the bed, no supports.\n- Each lip block lies on its back with its adornment face up, so they print without supports.\n- The upright lies with its front text face up and its plain back on the bed.\n\n**Assembly**\n- Push the tabs on the upright and the two lip blocks down through the slots in the base. The upright leans back 25°. The gap between the lip blocks is where the charging plug goes in, so there is no cable to thread.\n- They are a friction fit and come apart again; add a dot of glue if you want it permanent.',
     colours: ['#2c3e50', '#f4f4f0', '#c0392b'],
     // Desk stand in three flat prints: a base with slots, a tall back upright
-    // leaning 25° and a short front lip, both with tabs that pass through the
+    // leaning 25° and a front lip in two separate blocks, all with tabs that pass through the
     // base slots so they come apart. Front is -Y. Name on the base strip in
     // front of the lip; adornments on the lip's front face, either side of
     // the cable notch.
     parts: [
       { id: 'base', label: 'Base', colour: 0 },
       { id: 'upright', label: 'Back upright', colour: 0 },
-      { id: 'lip', label: 'Front lip', colour: 0 },
+      { id: 'lipL', label: 'Front lip, left', colour: 0 },
+      { id: 'lipR', label: 'Front lip, right', colour: 0 },
     ],
     build: () => {
-      const { base, upright, lip } = phoneStandParts()
-      return { base, upright, lip }
+      const { base, upright, lipL, lipR } = phoneStandParts()
+      return { base, upright, lipL, lipR }
     },
     zones: (() => {
       const P = phoneStandParts()
@@ -816,11 +815,9 @@ const templates: Tpl[] = [
         width: 60, height: 9, mode: 'engrave', depth: 1, maxLines: 1, default: 'Peter' },
       { id: 'front', label: 'Front of upright', part: 'upright', colour: 1, origin: [P.upX, vc + P.upDy, P.upH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 58, height: 40, mode: 'engrave', depth: 1, maxLines: 3, default: "I'm out" },
-      { id: 'back', label: 'Back of upright', part: 'upright', colour: 1, origin: [P.upX, vc + P.upDy, 0], normal: [0, 0, -1], up: [0, 1, 0],
-        width: 58, height: 40, mode: 'engrave', depth: 1, maxLines: 3, default: 'Do not\ndisturb' },
-      { id: 'left', label: 'Left adornment', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX - 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
+      { id: 'left', label: 'Left adornment', kind: 'symbol', part: 'lipL', colour: 2, origin: [P.lipLX, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'heart' },
-      { id: 'right', label: 'Right adornment', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX + 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
+      { id: 'right', label: 'Right adornment', kind: 'symbol', part: 'lipR', colour: 2, origin: [P.lipRX, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'heart' },
       ] as Zone[]
     })(),
@@ -829,8 +826,8 @@ const templates: Tpl[] = [
     id: 'phone-stand-halloween',
     name: 'Halloween Grave Phone Stand',
     tags: ['halloween', 'desk', 'phone', 'gift'],
-    notes: 'A phone stand shaped like a grave: a rounded headstone with an epitaph engraved on the front, a low footstone with a flower on each side, and a mound-edged base with a cement border round a domed, grassy middle.',
-    printInstructions: 'Three flat prints, no supports, all as placed.\n\n**Printing**\n- Print the base, the headstone (upright) and the footstone (front lip) flat on the bed, no supports.\n- The headstone lies with its engraved epitaph face up. The flowers on the footstone are raised 1 mm and face up, so they need no supports either.\n\n**Colours**\n- The base is a grey cement border round a green grass interior (two parts), the interior is a low dome covered in small blades of grass, and the headstone and footstone are grey. Swap to black for the engraved epitaph and white for the flowers (AMS/MMU 3MF, or a manual filament change at the top layers).\n\n**Assembly**\n- Push the tabs on the headstone and the footstone down through the slots in the base. The headstone leans back 25°.\n- They are a friction fit and come apart again; add a dot of glue if you want it permanent.',
+    notes: 'A phone stand shaped like a grave: a rounded headstone with an epitaph engraved on the front, two low footstone blocks with a flower on each, a gap between them for the charging plug, and a mound-edged base with a cement border round a domed, grassy middle.',
+    printInstructions: 'Four flat prints, no supports, all as placed.\n\n**Printing**\n- Print the base, the headstone (upright) and the two footstone blocks (front lip) flat on the bed, no supports.\n- The headstone lies with its engraved epitaph face up. The flowers on the footstones are raised 1 mm and face up, so they need no supports either.\n\n**Colours**\n- The base is a grey cement border round a green grass interior (two parts), the interior is a low dome covered in small blades of grass, and the headstone and footstone are grey. Swap to black for the engraved epitaph and white for the flowers (AMS/MMU 3MF, or a manual filament change at the top layers).\n\n**Assembly**\n- Push the tabs on the headstone and the two footstones down through the slots in the base. The headstone leans back 25°. The gap between the footstones is where the charging plug goes in, so there is no cable to thread.\n- They are a friction fit and come apart again; add a dot of glue if you want it permanent.',
     published: false,
     colours: ['#8b8f98', '#1a1a1a', '#f4f4f0', '#4a7c3a'],
     // Same construction as the phone stand, via the 'grave' variant: domed
@@ -840,20 +837,21 @@ const templates: Tpl[] = [
       { id: 'base', label: 'Cement border', colour: 0 },
       { id: 'grass', label: 'Grass', colour: 3 },
       { id: 'upright', label: 'Headstone', colour: 0 },
-      { id: 'lip', label: 'Footstone', colour: 0 },
+      { id: 'lipL', label: 'Footstone, left', colour: 0 },
+      { id: 'lipR', label: 'Footstone, right', colour: 0 },
     ],
     build: () => {
-      const { base, grass, upright, lip } = phoneStandParts('grave')
-      return { base, grass: grass!, upright, lip }
+      const { base, grass, upright, lipL, lipR } = phoneStandParts('grave')
+      return { base, grass: grass!, upright, lipL, lipR }
     },
     zones: (() => {
       const P = phoneStandParts('grave')
       return [
-      { id: 'epitaph', label: 'Epitaph', part: 'upright', colour: 1, origin: [P.upX, 30 + P.upDy, P.upH], normal: [0, 0, 1], up: [0, 1, 0],
-        width: 50, height: 36, mode: 'engrave', depth: 1, maxLines: 4, default: "R.I.P\nPeter Jones\n1901 - 2038\nHe Refused To Go!" },
-      { id: 'left', label: 'Left flower', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX - 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
+      { id: 'epitaph', label: 'Epitaph', part: 'upright', colour: 1, origin: [P.upX, 38 + P.upDy, P.upH], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 50, height: 40, mode: 'engrave', depth: 1, maxLines: 4, default: "R.I.P\nPeter Jones\n1901 - 2038\nHe Refused To Go!" },
+      { id: 'left', label: 'Left flower', kind: 'symbol', part: 'lipL', colour: 2, origin: [P.lipLX, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'spa' },
-      { id: 'right', label: 'Right flower', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX + 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
+      { id: 'right', label: 'Right flower', kind: 'symbol', part: 'lipR', colour: 2, origin: [P.lipRX, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'spa' },
       ] as Zone[]
     })(),
