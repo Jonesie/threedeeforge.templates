@@ -94,18 +94,27 @@ function borderPattern(): { corners: XY[]; sides: XY[]; edges: XY[] } {
 const PS_BASE_T = 4, PS_LEAN = 25, PS_UP_T = 6, PS_LIP_Y = [-40, -32], PS_CLEAR = 0.15
 const PS_UP_TABS: [number, number][] = [[-24, -10], [10, 24]] // upright tab x ranges
 const PS_LIP_TABS: [number, number][] = [[-28, -12], [12, 28]] // lip tab x ranges
-let psCache: ReturnType<typeof phoneStandPartsBuild> | undefined
-const phoneStandParts = () => (psCache ??= phoneStandPartsBuild())
-function phoneStandPartsBuild() {
+/** `classic` is the plain stand; `grave` has a domed headstone, a shorter base with a rim, and no knurling or grooves. */
+interface PsVariant { topR: number; baseFront: number; knurl: boolean; moundR: number; groove: boolean; rim: number; domeH: number }
+const PS_VARIANTS = {
+  classic: { topR: 8, baseFront: -52, knurl: true, moundR: 0, groove: true, rim: 0, domeH: 0 },
+  grave: { topR: 35, baseFront: -45, knurl: false, moundR: 3, groove: false, rim: 4, domeH: 2.5 },
+} satisfies Record<string, PsVariant>
+const psCache: Partial<Record<keyof typeof PS_VARIANTS, ReturnType<typeof phoneStandPartsBuild>>> = {}
+const phoneStandParts = (v: keyof typeof PS_VARIANTS = 'classic') => (psCache[v] ??= phoneStandPartsBuild(PS_VARIANTS[v]))
+function phoneStandPartsBuild(variant: PsVariant) {
   // Upright, built standing in local (x, y thickness, v up), then leaned onto the base.
   const standUp = (m: M) => m.rotate(90, 0, 0).translate(0, PS_UP_T, 0).rotate(-PS_LEAN, 0, 0).translate(0, 24, 2.6)
   // After rotate(90,0,0) a block's z range [a,b] becomes y in [-b,-a]; +T gives [T-b, T-a].
   const lump = (xs: [number, number], v: [number, number], grow = 0) =>
     Manifold.cube([xs[1] - xs[0] + 2 * grow, v[1] - v[0], PS_UP_T + 2 * grow]).translate(xs[0] - grow, v[0], -grow)
-  const profile = CrossSection.union(
-    roundedRect(70, 62, 8).translate(0, 31),
-    CrossSection.square([70, 20], true).translate(0, 10),
-  )
+  // A full semicircular arch (topR 35 = half the width), or rounded top corners.
+  const profile = variant.topR >= 35
+    ? CrossSection.union(CrossSection.circle(35, 96).translate(0, 27), CrossSection.square([70, 27]).translate(-35, 0))
+    : CrossSection.union(
+        roundedRect(70, 62, variant.topR).translate(0, 31),
+        CrossSection.square([70, 20], true).translate(0, 10),
+      )
   const box = (z0: number, z1: number) => Manifold.cube([300, 300, z1 - z0]).translate(-150, -150, z0)
   const shoulder = standUp(Manifold.extrude(profile, PS_UP_T)).intersect(box(PS_BASE_T, 100))
   const upTabs = (grow: number) => Manifold.union(PS_UP_TABS.map((xs) => standUp(lump(xs, [-12, 4], grow))))
@@ -173,22 +182,53 @@ function phoneStandPartsBuild() {
     }
     return solid.subtract(skin.intersect(Manifold.union(hatch)))
   }
-  const upFlat = knurl(up.solid.subtract(grooves), at(profile), uy + 8)
+  const upGrooved = variant.groove ? up.solid.subtract(grooves) : up.solid
+  const upFlat = variant.knurl ? knurl(upGrooved, at(profile), uy + 8) : upGrooved
 
   // Matching 2 mm groove in the base top: up each side from behind the lip and
   // across the back, lined up with the upright's side runs.
-  const baseOutline = roundedRect(70, 92, 8).translate(0, -6)
+  const baseOutline = roundedRect(70, 40 - variant.baseFront, 8).translate(0, (40 + variant.baseFront) / 2)
   const baseGroove = baseOutline.offset(-3.5, 'Round', 2, 32).subtract(baseOutline.offset(-5.5, 'Round', 2, 32))
     .intersect(CrossSection.square([100, 80]).translate(-50, ly1 + 2))
-  const baseBody = Manifold.extrude(baseOutline, PS_BASE_T)
-    .subtract(Manifold.extrude(baseGroove, 1.5).translate(0, 0, PS_BASE_T - 1))
+  // Top edge rounded off (a quarter circle of radius moundR, in 0.5 mm steps) so the grave base reads as a mound.
+  const moundSteps = 6
+  const baseSolid = variant.moundR === 0 ? Manifold.extrude(baseOutline, PS_BASE_T) : Manifold.union([
+    Manifold.extrude(baseOutline, PS_BASE_T - variant.moundR),
+    ...Array.from({ length: moundSteps }, (_, j) => {
+      const h = ((j + 0.5) * variant.moundR) / moundSteps
+      const inset = variant.moundR - Math.sqrt(variant.moundR ** 2 - h ** 2)
+      return Manifold.extrude(baseOutline.offset(-inset, 'Round', 2, 32), variant.moundR / moundSteps + 0.001)
+        .translate(0, 0, PS_BASE_T - variant.moundR + (j * variant.moundR) / moundSteps)
+    }),
+  ])
+  const baseBody = (variant.groove ? baseSolid.subtract(Manifold.extrude(baseGroove, 1.5).translate(0, 0, PS_BASE_T - 1)) : baseSolid)
     .subtract(Manifold.cube([14, 12, 10]).translate(-7, ly0 - 2, -2)) // cable hole
     .subtract(Manifold.cube([6, 72, 2.2]).translate(-3, ly0 + 9, -0.2)) // cable channel under the base, hole to rear edge
     .subtract(lipTab(PS_CLEAR))
     .subtract(upTabs(PS_CLEAR).intersect(box(-1, 5)))
-  const baseKnurled = knurl(baseBody, baseOutline, -100)
-  const lipKnurled = knurl(lp.solid, lipFace.translate(165, lp.dy), -52 + 4.5)
-  return { base: baseKnurled, upright: upFlat, lip: lipKnurled, upH: up.h, lipH: lp.h, upDy: up.dy, lipDy: lp.dy, upX: 85, lipX: 165 }
+  const baseKnurled = variant.knurl ? knurl(baseBody, baseOutline, -100) : baseBody
+  const lipKnurled = variant.knurl ? knurl(lp.solid, lipFace.translate(165, lp.dy), -52 + 4.5) : lp.solid
+  // With a rim, the base is split into a rim and a flush interior (grass) so each can take its own colour.
+  const grassCut = variant.rim ? Manifold.extrude(baseOutline.offset(-variant.rim, 'Round', 2, 32), 20).translate(0, 0, -5) : undefined
+  let grass = grassCut ? baseKnurled.intersect(grassCut) : undefined
+  if (grass && variant.domeH) {
+    // A low dome between the lip and the upright (it dies away before either footprint, so
+    // nothing overlaps), covered in small tilted blades of grass.
+    const dome = Manifold.sphere(1, 64).scale([29, 26, variant.domeH]).translate(0, -4, PS_BASE_T)
+    const surface = (x: number, y: number) => PS_BASE_T + variant.domeH * Math.sqrt(Math.max(0, 1 - (x / 29) ** 2 - ((y + 4) / 26) ** 2))
+    let seed = 12345
+    const rnd = () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
+    const blades: M[] = []
+    for (let gx = -29; gx <= 29; gx += 3.2) for (let gy = -39; gy <= 34; gy += 3.2) {
+      const x = gx + (rnd() - 0.5) * 2.4, y = gy + (rnd() - 0.5) * 2.4
+      const a = rnd() * 24 - 12, b = rnd() * 24 - 12, h = 1.1 + rnd() * 0.6
+      if ((y > 20 && y < 35) || (y > ly0 - 3 && y < ly1 + 1)) continue // upright and lip footprints
+      blades.push(Manifold.cylinder(h, 0.55, 0.1, 5).rotate(a, b, rnd() * 360).translate(x, y, surface(x, y) - 0.2))
+    }
+    grass = Manifold.union([grass, dome.intersect(grassCut!), Manifold.union(blades).intersect(grassCut!)])
+  }
+  const rimmed = grassCut ? baseKnurled.subtract(grassCut) : baseKnurled
+  return { base: rimmed, grass, upright: upFlat, lip: lipKnurled, upH: up.h, lipH: lp.h, upDy: up.dy, lipDy: lp.dy, upX: 85, lipX: 165 }
 }
 
 const templates: Tpl[] = [
@@ -782,6 +822,39 @@ const templates: Tpl[] = [
         width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'heart' },
       { id: 'right', label: 'Right adornment', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX + 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'heart' },
+      ] as Zone[]
+    })(),
+  },
+  {
+    id: 'phone-stand-halloween',
+    name: 'Halloween Grave Phone Stand',
+    tags: ['halloween', 'desk', 'phone', 'gift'],
+    notes: 'A phone stand shaped like a grave: a rounded headstone with an epitaph engraved on the front, a low footstone with a flower on each side, and a mound-edged base with a cement border round a domed, grassy middle.',
+    printInstructions: 'Three flat prints, no supports, all as placed.\n\n**Printing**\n- Print the base, the headstone (upright) and the footstone (front lip) flat on the bed, no supports.\n- The headstone lies with its engraved epitaph face up. The flowers on the footstone are raised 1 mm and face up, so they need no supports either.\n\n**Colours**\n- The base is a grey cement border round a green grass interior (two parts), the interior is a low dome covered in small blades of grass, and the headstone and footstone are grey. Swap to black for the engraved epitaph and white for the flowers (AMS/MMU 3MF, or a manual filament change at the top layers).\n\n**Assembly**\n- Push the tabs on the headstone and the footstone down through the slots in the base. The headstone leans back 25°.\n- They are a friction fit and come apart again; add a dot of glue if you want it permanent.',
+    published: false,
+    colours: ['#8b8f98', '#1a1a1a', '#f4f4f0', '#4a7c3a'],
+    // Same construction as the phone stand, via the 'grave' variant: domed
+    // headstone, base cut back to just in front of the footstone with a rim
+    // and grass interior, no knurl or grooves.
+    parts: [
+      { id: 'base', label: 'Cement border', colour: 0 },
+      { id: 'grass', label: 'Grass', colour: 3 },
+      { id: 'upright', label: 'Headstone', colour: 0 },
+      { id: 'lip', label: 'Footstone', colour: 0 },
+    ],
+    build: () => {
+      const { base, grass, upright, lip } = phoneStandParts('grave')
+      return { base, grass: grass!, upright, lip }
+    },
+    zones: (() => {
+      const P = phoneStandParts('grave')
+      return [
+      { id: 'epitaph', label: 'Epitaph', part: 'upright', colour: 1, origin: [P.upX, 30 + P.upDy, P.upH], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 50, height: 36, mode: 'engrave', depth: 1, maxLines: 4, default: "R.I.P\nPeter Jones\n1901 - 2038\nHe Refused To Go!" },
+      { id: 'left', label: 'Left flower', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX - 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'spa' },
+      { id: 'right', label: 'Right flower', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX + 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'spa' },
       ] as Zone[]
     })(),
   },
