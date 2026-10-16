@@ -8,18 +8,38 @@
     "gift"
   ],
   "author": "Jonesie",
-  "mesh": "mesh.glb",
+  "parts": [
+    {
+      "id": "base",
+      "label": "Base",
+      "colour": 0,
+      "mesh": "base.glb"
+    },
+    {
+      "id": "upright",
+      "label": "Back upright",
+      "colour": 0,
+      "mesh": "upright.glb"
+    },
+    {
+      "id": "lip",
+      "label": "Front lip",
+      "colour": 0,
+      "mesh": "lip.glb"
+    }
+  ],
   "colours": [
     "#2c3e50",
     "#f4f4f0",
     "#c0392b"
   ],
   "notes": "A desk stand for a phone, with a name on the base, text on the front and back of the upright and an adornment at each side.",
-  "printInstructions": "Print as placed, base on the bed. Turn supports on for the raised adornments, and only for those.\n\n**Supports**\n- The adornments on the lip face are embossed 1 mm on a vertical wall, so the underside of each one is an unsupported overhang and prints ragged without help. Use normal or tree supports with \"everywhere\" (not \"build plate only\": they start on the lip, not the bed), or paint supports onto just the lip face.\n- If you switch the adornments to engraved in the editor, no supports are needed at all.\n- The backrest leans 25° and the cable slot under the lip bridges, so neither needs any.",
+  "printInstructions": "Three flat prints, no supports, all as placed.\n\n**Printing**\n- Print the base, the tall back upright and the short front lip flat on the bed, no supports.\n- The lip lies on its back with the adornments face up, so they print without supports.\n- The upright lies with its front text face up. Its back text is engraved into the face on the bed, so use a smooth plate for a clean finish.\n\n**Assembly**\n- Push the tabs on the upright and the lip down through the slots in the base. The upright leans back 25°.\n- They are a friction fit and come apart again; add a dot of glue if you want it permanent.",
   "zones": [
     {
       "id": "name",
       "label": "Name",
+      "part": "base",
       "colour": 1,
       "origin": [
         0,
@@ -46,21 +66,22 @@
     {
       "id": "front",
       "label": "Front of upright",
+      "part": "upright",
       "colour": 1,
       "origin": [
-        0,
-        38.36902089918378,
-        33.414464759246094
+        85,
+        -15.351892994490022,
+        6.000000000000007
       ],
       "normal": [
         0,
-        -0.9063077870366499,
-        0.42261826174069944
+        0,
+        1
       ],
       "up": [
         0,
-        0.42261826174069944,
-        0.9063077870366499
+        1,
+        0
       ],
       "width": 58,
       "height": 40,
@@ -72,21 +93,22 @@
     {
       "id": "back",
       "label": "Back of upright",
+      "part": "upright",
       "colour": 1,
       "origin": [
-        0,
-        43.80686762140368,
-        30.8787551888019
+        85,
+        -15.351892994490022,
+        0
       ],
       "normal": [
         0,
-        0.9063077870366499,
-        -0.42261826174069944
+        0,
+        -1
       ],
       "up": [
         0,
-        0.42261826174069944,
-        0.9063077870366499
+        1,
+        0
       ],
       "width": 58,
       "height": 40,
@@ -99,21 +121,22 @@
       "id": "left",
       "label": "Left adornment",
       "kind": "symbol",
+      "part": "lip",
       "colour": 2,
       "origin": [
-        -21,
-        -40,
-        11
+        144,
+        -41.2,
+        8
       ],
       "normal": [
         0,
-        -1,
-        0
+        0,
+        1
       ],
       "up": [
         0,
-        0,
-        1
+        1,
+        0
       ],
       "width": 13,
       "height": 13,
@@ -126,21 +149,22 @@
       "id": "right",
       "label": "Right adornment",
       "kind": "symbol",
+      "part": "lip",
       "colour": 2,
       "origin": [
-        21,
-        -40,
-        11
+        186,
+        -41.2,
+        8
       ],
       "normal": [
         0,
-        -1,
-        0
+        0,
+        1
       ],
       "up": [
         0,
-        0,
-        1
+        1,
+        0
       ],
       "width": 13,
       "height": 13,
