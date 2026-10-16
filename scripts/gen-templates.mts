@@ -85,6 +85,112 @@ function borderPattern(): { corners: XY[]; sides: XY[]; edges: XY[] } {
   }
 }
 
+/**
+ * The phone stand's three pieces: a flat base with slots, a tall back upright
+ * leaning 25°, and a short front lip. Each has tabs that pass through the base
+ * slots. The upright and lip are built in place, then laid flat beside the
+ * base, face up, for printing.
+ */
+const PS_BASE_T = 4, PS_LEAN = 25, PS_UP_T = 6, PS_LIP_Y = [-40, -32], PS_CLEAR = 0.15
+const PS_UP_TABS: [number, number][] = [[-24, -10], [10, 24]] // upright tab x ranges
+const PS_LIP_TABS: [number, number][] = [[-28, -12], [12, 28]] // lip tab x ranges
+let psCache: ReturnType<typeof phoneStandPartsBuild> | undefined
+const phoneStandParts = () => (psCache ??= phoneStandPartsBuild())
+function phoneStandPartsBuild() {
+  // Upright, built standing in local (x, y thickness, v up), then leaned onto the base.
+  const standUp = (m: M) => m.rotate(90, 0, 0).translate(0, PS_UP_T, 0).rotate(-PS_LEAN, 0, 0).translate(0, 24, 2.6)
+  // After rotate(90,0,0) a block's z range [a,b] becomes y in [-b,-a]; +T gives [T-b, T-a].
+  const lump = (xs: [number, number], v: [number, number], grow = 0) =>
+    Manifold.cube([xs[1] - xs[0] + 2 * grow, v[1] - v[0], PS_UP_T + 2 * grow]).translate(xs[0] - grow, v[0], -grow)
+  const profile = CrossSection.union(
+    roundedRect(70, 62, 8).translate(0, 31),
+    CrossSection.square([70, 20], true).translate(0, 10),
+  )
+  const box = (z0: number, z1: number) => Manifold.cube([300, 300, z1 - z0]).translate(-150, -150, z0)
+  const shoulder = standUp(Manifold.extrude(profile, PS_UP_T)).intersect(box(PS_BASE_T, 100))
+  const upTabs = (grow: number) => Manifold.union(PS_UP_TABS.map((xs) => standUp(lump(xs, [-12, 4], grow))))
+  const upright = Manifold.union(shoulder, upTabs(0).intersect(box(0.2, PS_BASE_T + 0.01)))
+
+  // Lip, standing in place on the base: y in PS_LIP_Y, z 4..18, tabs below.
+  const [ly0, ly1] = PS_LIP_Y
+  // Front-face outline in XZ with rounded top corners (the bottom is cut flat on the base).
+  const lipFace = roundedRect(70, 28, 5).translate(0, 4)
+  const lipBlock = Manifold.extrude(lipFace, ly1 - ly0).rotate(90, 0, 0).translate(0, ly1, 0)
+  const lipTab = (grow: number) => Manifold.union(PS_LIP_TABS.map(([x0, x1]) =>
+    Manifold.cube([x1 - x0 + 2 * grow, ly1 - ly0 + 2 * grow, PS_BASE_T + 2]).translate(x0 - grow, ly0 - grow, -1)))
+  const notch = Manifold.cube([14, 12, 8]).translate(-7, ly0 - 2, PS_BASE_T - 0.01)
+  const lip = Manifold.union(
+    lipBlock.intersect(box(PS_BASE_T, 100)),
+    lipTab(0).intersect(box(0.2, PS_BASE_T + 0.01)),
+  ).subtract(notch)
+
+  // Lay flat, face up. Front faces (normal -Y) go to +Z via rotate(-90,0,0).
+  const lay = (m: M, x: number) => {
+    const r = m.rotate(-90, 0, 0)
+    const bb = r.boundingBox()
+    return { solid: r.translate(x - (bb.min[0] + bb.max[0]) / 2, -52 - bb.min[1], -bb.min[2]), dy: -52 - bb.min[1], h: bb.max[2] - bb.min[2] }
+  }
+  const up = lay(upright.translate(0, -24, -2.6).rotate(PS_LEAN, 0, 0), 85)
+  const lp = lay(lip, 165)
+
+  // Decoration, in the flat frame (x + 85, v + dy). A 2 mm groove 1 mm deep
+  // round both faces, just outside the text area, and a cross-hatch knurl
+  // (see knurl below) on the outer edge wall of all three pieces.
+  const ux = 85, uy = up.dy
+  const at = (c: typeof profile) => c.translate(ux, uy)
+  // The groove has no bottom run: its two side runs go straight down and
+  // out of the bottom edge, where they meet the groove in the base top.
+  const ring = profile.offset(-3.5, 'Round', 2, 32).subtract(profile.offset(-5.5, 'Round', 2, 32))
+  const groove2d = at(CrossSection.union(
+    ring.subtract(CrossSection.square([59, 6]).translate(-29.5, 0)),
+    CrossSection.union(
+      CrossSection.square([2, 6]).translate(-31.5, -2),
+      CrossSection.square([2, 6]).translate(29.5, -2),
+    ),
+  ))
+  const grooves = Manifold.union(
+    Manifold.extrude(groove2d, 1.5).translate(0, 0, PS_UP_T - 1),
+    Manifold.extrude(groove2d, 1.5).translate(0, 0, -0.5),
+  )
+  // Cross-hatch knurl on a piece's outer edge wall: two sets of diagonal
+  // 0.7 mm cuts, 0.7 mm deep, only on walls above minY (clear of the tabs).
+  const hatchPlane = (n: [number, number, number], c: number) => {
+    const l = Math.hypot(...n), nn = n.map((k) => k / l)
+    let u = [nn[1], -nn[0], 0]; const ul = Math.hypot(u[0], u[1]); u = u.map((k) => k / ul)
+    const v = [nn[1] * u[2] - nn[2] * u[1], nn[2] * u[0] - nn[0] * u[2], nn[0] * u[1] - nn[1] * u[0]]
+    const t = nn.map((k) => k * c)
+    return Manifold.cube([300, 300, 0.7], true).transform([u[0], u[1], u[2], 0, v[0], v[1], v[2], 0, nn[0], nn[1], nn[2], 0, t[0], t[1], t[2], 1])
+  }
+  const knurl = (solid: M, outline: typeof profile, minY: number) => {
+    const bb = solid.boundingBox()
+    const skin = Manifold.extrude(outline.subtract(outline.offset(-0.7, 'Round', 2, 32)), bb.max[2] - bb.min[2] + 2).translate(0, 0, bb.min[2] - 1)
+      .intersect(Manifold.cube([400, 400, 40]).translate(-200, minY, -20))
+    const hatch: M[] = []
+    for (const n of [[1, 1, 1], [1, 1, -1]] as [number, number, number][]) {
+      const l = Math.hypot(...n)
+      const dots = [bb.min, bb.max].flatMap((lo) => [bb.min, bb.max].flatMap((mid) => [bb.min, bb.max].map((hi) => n[0] * lo[0] + n[1] * mid[1] + n[2] * hi[2])))
+      for (let c = Math.floor(Math.min(...dots) / l / 2.8) * 2.8 - 2.8; c < Math.max(...dots) / l + 2.8; c += 2.8) hatch.push(hatchPlane(n, c))
+    }
+    return solid.subtract(skin.intersect(Manifold.union(hatch)))
+  }
+  const upFlat = knurl(up.solid.subtract(grooves), at(profile), uy + 8)
+
+  // Matching 2 mm groove in the base top: up each side from behind the lip and
+  // across the back, lined up with the upright's side runs.
+  const baseOutline = roundedRect(70, 92, 8).translate(0, -6)
+  const baseGroove = baseOutline.offset(-3.5, 'Round', 2, 32).subtract(baseOutline.offset(-5.5, 'Round', 2, 32))
+    .intersect(CrossSection.square([100, 80]).translate(-50, ly1 + 2))
+  const baseBody = Manifold.extrude(baseOutline, PS_BASE_T)
+    .subtract(Manifold.extrude(baseGroove, 1.5).translate(0, 0, PS_BASE_T - 1))
+    .subtract(Manifold.cube([14, 12, 10]).translate(-7, ly0 - 2, -2)) // cable hole
+    .subtract(Manifold.cube([6, 72, 2.2]).translate(-3, ly0 + 9, -0.2)) // cable channel under the base, hole to rear edge
+    .subtract(lipTab(PS_CLEAR))
+    .subtract(upTabs(PS_CLEAR).intersect(box(-1, 5)))
+  const baseKnurled = knurl(baseBody, baseOutline, -100)
+  const lipKnurled = knurl(lp.solid, lipFace.translate(165, lp.dy), -52 + 4.5)
+  return { base: baseKnurled, upright: upFlat, lip: lipKnurled, upH: up.h, lipH: lp.h, upDy: up.dy, lipDy: lp.dy, upX: 85, lipX: 165 }
+}
+
 const templates: Tpl[] = [
   {
     id: 'plaque-classic',
@@ -646,43 +752,35 @@ const templates: Tpl[] = [
     name: 'Phone Stand',
     tags: ['desk', 'phone', 'gift'],
     notes: 'A desk stand for a phone, with a name on the base, text on the front and back of the upright and an adornment at each side.',
-    printInstructions: 'Print as placed, base on the bed. Turn supports on for the raised adornments, and only for those.\n\n**Supports**\n- The adornments on the lip face are embossed 1 mm on a vertical wall, so the underside of each one is an unsupported overhang and prints ragged without help. Use normal or tree supports with "everywhere" (not "build plate only": they start on the lip, not the bed), or paint supports onto just the lip face.\n- If you switch the adornments to engraved in the editor, no supports are needed at all.\n- The backrest leans 25° and the cable slot under the lip bridges, so neither needs any.',
+    printInstructions: 'Three flat prints, no supports, all as placed.\n\n**Printing**\n- Print the base, the tall back upright and the short front lip flat on the bed, no supports.\n- The lip lies on its back with the adornments face up, so they print without supports.\n- The upright lies with its front text face up. Its back text is engraved into the face on the bed, so use a smooth plate for a clean finish.\n\n**Assembly**\n- Push the tabs on the upright and the lip down through the slots in the base. The upright leans back 25°.\n- They are a friction fit and come apart again; add a dot of glue if you want it permanent.',
     colours: ['#2c3e50', '#f4f4f0', '#c0392b'],
-    // Desk stand: 70 wide base with a front lip (cable slot underneath) and a
-    // backrest leaning 25° back. Phone sits on the base against the backrest.
-    // Front is -Y. Text on the base strip in front of the lip; adornments on
-    // the lip face either side of the slot.
+    // Desk stand in three flat prints: a base with slots, a tall back upright
+    // leaning 25° and a short front lip, both with tabs that pass through the
+    // base slots so they come apart. Front is -Y. Name on the base strip in
+    // front of the lip; adornments on the lip's front face, either side of
+    // the cable notch.
+    parts: [
+      { id: 'base', label: 'Base', colour: 0 },
+      { id: 'upright', label: 'Back upright', colour: 0 },
+      { id: 'lip', label: 'Front lip', colour: 0 },
+    ],
     build: () => {
-      const base = Manifold.extrude(roundedRect(70, 92, 8), 4).translate(0, -6, 0)
-      const lip = Manifold.extrude(roundedRect(70, 8, 3), 18).translate(0, -36, 0)
-      const slot = Manifold.cube([14, 12, 16]).translate(-7, -42, -4)
-      // Upright: rounded top corners, square bottom (it sinks into the base),
-      // stood up (XY → XZ) and leaned back 25°.
-      const uprightProfile = CrossSection.union(
-        roundedRect(70, 62, 8).translate(0, 31),
-        CrossSection.square([70, 20], true).translate(0, 10),
-      )
-      const back = Manifold.extrude(uprightProfile, 6).rotate(90, 0, 0).translate(0, 6, 0)
-        .rotate(-25, 0, 0).translate(0, 24, 2.6)
-      return Manifold.union([base, lip, back]).subtract(slot)
+      const { base, upright, lip } = phoneStandParts()
+      return { base, upright, lip }
     },
     zones: (() => {
-      // Upright rear face: local +Y after the 25° lean; text-up is the slab's up.
-      const c = Math.cos(Math.PI * 25 / 180), s = Math.sin(Math.PI * 25 / 180)
-      const normal: Vec3 = [0, c, -s]
-      const up: Vec3 = [0, s, c]
-      // Rear-face centre: local (0, 6, 34) through the same transform as the slab.
-      const origin: Vec3 = [0, 6 * c + 34 * s + 24, -6 * s + 34 * c + 2.6]
+      const P = phoneStandParts()
+      const vc = 34 // text centre, up the upright
       return [
-      { id: 'name', label: 'Name', colour: 1, origin: [0, -46, 4], normal: [0, 0, 1], up: [0, 1, 0],
+      { id: 'name', label: 'Name', part: 'base', colour: 1, origin: [0, -46, 4], normal: [0, 0, 1], up: [0, 1, 0],
         width: 60, height: 9, mode: 'engrave', depth: 1, maxLines: 1, default: 'Peter' },
-      { id: 'front', label: 'Front of upright', colour: 1, origin: [0, 34 * s + 24, 34 * c + 2.6], normal: [0, -c, s], up,
+      { id: 'front', label: 'Front of upright', part: 'upright', colour: 1, origin: [P.upX, vc + P.upDy, P.upH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 58, height: 40, mode: 'engrave', depth: 1, maxLines: 3, default: "I'm out" },
-      { id: 'back', label: 'Back of upright', colour: 1, origin, normal, up,
+      { id: 'back', label: 'Back of upright', part: 'upright', colour: 1, origin: [P.upX, vc + P.upDy, 0], normal: [0, 0, -1], up: [0, 1, 0],
         width: 58, height: 40, mode: 'engrave', depth: 1, maxLines: 3, default: 'Do not\ndisturb' },
-      { id: 'left', label: 'Left adornment', kind: 'symbol', colour: 2, origin: [-21, -40, 11], normal: [0, -1, 0], up: [0, 0, 1],
+      { id: 'left', label: 'Left adornment', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX - 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'heart' },
-      { id: 'right', label: 'Right adornment', kind: 'symbol', colour: 2, origin: [21, -40, 11], normal: [0, -1, 0], up: [0, 0, 1],
+      { id: 'right', label: 'Right adornment', kind: 'symbol', part: 'lip', colour: 2, origin: [P.lipX + 21, 11 + P.lipDy, P.lipH], normal: [0, 0, 1], up: [0, 1, 0],
         width: 13, height: 13, mode: 'emboss', depth: 1, maxLines: 1, default: 'heart' },
       ] as Zone[]
     })(),
