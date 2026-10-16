@@ -1,0 +1,132 @@
+{
+  "id": "phone-stand-halloween",
+  "name": "Halloween Grave Phone Stand",
+  "units": "mm",
+  "tags": [
+    "halloween",
+    "desk",
+    "phone",
+    "gift"
+  ],
+  "author": "Jonesie",
+  "parts": [
+    {
+      "id": "base",
+      "label": "Cement border",
+      "colour": 0,
+      "mesh": "base.glb"
+    },
+    {
+      "id": "grass",
+      "label": "Grass",
+      "colour": 3,
+      "mesh": "grass.glb"
+    },
+    {
+      "id": "upright",
+      "label": "Headstone",
+      "colour": 0,
+      "mesh": "upright.glb"
+    },
+    {
+      "id": "lip",
+      "label": "Footstone",
+      "colour": 0,
+      "mesh": "lip.glb"
+    }
+  ],
+  "colours": [
+    "#8b8f98",
+    "#1a1a1a",
+    "#f4f4f0",
+    "#4a7c3a"
+  ],
+  "notes": "A phone stand shaped like a grave: a rounded headstone with an epitaph engraved on the front, a low footstone with a flower on each side, and a mound-edged base with a cement border round a domed, grassy middle.",
+  "printInstructions": "Three flat prints, no supports, all as placed.\n\n**Printing**\n- Print the base, the headstone (upright) and the footstone (front lip) flat on the bed, no supports.\n- The headstone lies with its engraved epitaph face up. The flowers on the footstone are raised 1 mm and face up, so they need no supports either.\n\n**Colours**\n- The base is a grey cement border round a green grass interior (two parts), the interior is a low dome covered in small blades of grass, and the headstone and footstone are grey. Swap to black for the engraved epitaph and white for the flowers (AMS/MMU 3MF, or a manual filament change at the top layers).\n\n**Assembly**\n- Push the tabs on the headstone and the footstone down through the slots in the base. The headstone leans back 25°.\n- They are a friction fit and come apart again; add a dot of glue if you want it permanent.",
+  "published": false,
+  "zones": [
+    {
+      "id": "epitaph",
+      "label": "Epitaph",
+      "part": "upright",
+      "colour": 1,
+      "origin": [
+        85,
+        -19.351892994490022,
+        6.000000000000014
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 50,
+      "height": 36,
+      "mode": "engrave",
+      "depth": 1,
+      "maxLines": 4,
+      "default": "R.I.P\nPeter Jones\n1901 - 2038\nHe Refused To Go!"
+    },
+    {
+      "id": "left",
+      "label": "Left flower",
+      "kind": "symbol",
+      "part": "lip",
+      "colour": 2,
+      "origin": [
+        144,
+        -41.2,
+        8
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 13,
+      "height": 13,
+      "mode": "emboss",
+      "depth": 1,
+      "maxLines": 1,
+      "default": "spa"
+    },
+    {
+      "id": "right",
+      "label": "Right flower",
+      "kind": "symbol",
+      "part": "lip",
+      "colour": 2,
+      "origin": [
+        186,
+        -41.2,
+        8
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 13,
+      "height": 13,
+      "mode": "emboss",
+      "depth": 1,
+      "maxLines": 1,
+      "default": "spa"
+    }
+  ]
+}
