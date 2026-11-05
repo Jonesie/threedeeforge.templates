@@ -885,39 +885,44 @@ const templates: Tpl[] = [
     id: 'casino-chip',
     name: 'Casino Chip',
     tags: ['chip', 'novelty', 'game'],
-    notes: 'A casino-style chip with text curved round the top and bottom and a denomination in the middle, with coloured edge spots.',
-    printInstructions: 'Print flat as placed, no supports.\n\n**Colours**\n- Three colours: load the 3MF and assign a filament to body, edge spots and inlay.\n- All three are flush, so a single-colour print of the merged STL works too.\n\n**Quality**\n- The curved text is only 0.5 mm deep; 0.12 mm layers keep it crisp.',
-    // 40 mm poker chip, 3.3 thick, three colours like the real thing: the
-    // body, eight full-height edge spots set into the rim, and a flush
-    // centre inlay. Curved text around the face on the body, in the r
-    // 12.5–17 annulus between inlay and spot roots, denomination on the
-    // inlay. Bold font: at this size thin serifs come out under a nozzle
-    // width.
+    notes: 'A casino-style chip with white text curved round the top and bottom, a denomination on a coloured centre, and white edge blocks, built from stacked layers.',
+    printInstructions: 'Print flat as placed, no supports.\n\n**Colours**\n- Four parts in three colours: a red base disk, a white middle layer with eight edge blocks rising 1 mm, a red top ring that slots over the white layer around the blocks, and a gold centre for the denomination.\n- Load the 3MF and assign a filament to each part. The red base and top ring can share one filament.\n- All the layers touch, so a single-colour print of the merged STL works too.\n\n**Quality**\n- The curved text and the denomination are raised 0.4 mm; 0.12 mm layers keep them crisp.',
+    // 40 mm poker chip, 4 thick. Red base 1, then a white layer 2
+    // thick whose eight edge blocks rise a further 1 mm to the top. A red
+    // 1 mm top ring fills round the blocks and a centre circle of a third
+    // colour carries the denomination. Text is embossed white on the red
+    // ring: no deep wells to print. Bold font: at this size thin serifs
+    // come out under a nozzle width.
     parts: [
-      { id: 'body', label: 'Chip', colour: 0 },
-      { id: 'spots', label: 'Edge spots', colour: 1 },
-      { id: 'inlay', label: 'Inlay', colour: 2 },
+      { id: 'base', label: 'Red base', colour: 1 },
+      { id: 'middle', label: 'White layer and blocks', colour: 0 },
+      { id: 'top', label: 'Red top ring', colour: 1 },
+      { id: 'inlay', label: 'Centre', colour: 2 },
     ],
-    colours: ['#c0392b', '#f4f4f0', '#e6d9bd'],
+    colours: ['#f4f4f0', '#c0392b', '#e6b422'],
     build: () => {
-      const disc = Manifold.cylinder(3.3, 20, 20, 128)
-      const inlay = Manifold.cylinder(0.6, 12.5, 12.5, 96).translate(0, 0, 3.3 - 0.6)
-      const spotCuts: M[] = []
+      const BASE = 1, MID = 2, T = 4, RIS = T - BASE - MID, R = 20, RC = 12.5
+      const z1 = BASE + MID
+      const base = Manifold.cylinder(BASE, R, R, 128)
+      const disc = Manifold.cylinder(MID, R, R, 128).translate(0, 0, BASE)
+      const cuts: M[] = []
       for (let i = 0; i < 8; i++)
-        spotCuts.push(Manifold.cube([7, 6, 10], true).translate(0, 20, 1.65).rotate(0, 0, i * 45))
-      const spots = Manifold.union(spotCuts).intersect(disc).subtract(inlay)
-      const body = disc.subtract(inlay).subtract(spots)
-      return { body, spots, inlay }
+        cuts.push(Manifold.cube([7, 6, RIS], false).translate(-3.5, 17, z1).rotate(0, 0, i * 45))
+      const blocks = Manifold.union(cuts).intersect(Manifold.cylinder(T, R, R, 128))
+      const middle = Manifold.union([disc, blocks])
+      const inlay = Manifold.cylinder(RIS, RC, RC, 96).translate(0, 0, z1)
+      const top = Manifold.cylinder(RIS, R, R, 128).translate(0, 0, z1).subtract(blocks).subtract(inlay)
+      return { base, middle, top, inlay }
     },
     zones: [
-      { id: 'top', label: 'Top arc', colour: 1, origin: [0, 0, 3.3], normal: [0, 0, 1], up: [0, 1, 0],
-        width: 0, height: 4, mode: 'engrave', depth: 0.5, maxLines: 1, default: 'FORGE CASINO', font: 'Anton',
+      { id: 'top', label: 'Top arc', part: 'top', colour: 0, origin: [0, 0, 4], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 0, height: 4, mode: 'emboss', depth: 0.4, maxLines: 1, default: 'FORGE CASINO', font: 'Anton',
         arc: { radius: 12.9, sweep: 170, side: 'top' } },
-      { id: 'bottom', label: 'Bottom arc', colour: 1, origin: [0, 0, 3.3], normal: [0, 0, 1], up: [0, 1, 0],
-        width: 0, height: 4, mode: 'engrave', depth: 0.5, maxLines: 1, default: 'NO CASH VALUE', font: 'Anton',
+      { id: 'bottom', label: 'Bottom arc', part: 'top', colour: 0, origin: [0, 0, 4], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 0, height: 4, mode: 'emboss', depth: 0.4, maxLines: 1, default: 'NO CASH VALUE', font: 'Anton',
         arc: { radius: 12.9, sweep: 170, side: 'bottom' } },
-      { id: 'value', label: 'Denomination', part: 'inlay', colour: 0, origin: [0, 0, 3.3], normal: [0, 0, 1], up: [0, 1, 0],
-        width: 18, height: 12, mode: 'engrave', depth: 0.4, maxLines: 1, default: '100', font: 'Anton' },
+      { id: 'value', label: 'Denomination', part: 'inlay', colour: 0, origin: [0, 0, 4], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 18, height: 12, mode: 'emboss', depth: 0.4, maxLines: 1, default: '100', font: 'Anton' },
     ],
   },
   {
