@@ -940,6 +940,7 @@ const templates: Tpl[] = [
       { id: 'plate', label: 'Plate', colour: 0 },
       { id: 'stripes', label: 'Striped border', colour: 1 },
     ],
+    published: false,
     colours: ['#1a1a1a', '#f1c40f', '#f4f4f0'],
     build: () => {
       const W = 140, H = 75, R = 6, T = 3, BAND = 8, RIM = 1, DEPTH = 1, PITCH = 8, BAR = 4

@@ -31,6 +31,7 @@
   ],
   "notes": "A small licence-plate style sign for a bike, car or trailer: a single-colour plate with a striped border, a caption along the top and bottom, a picture on the left and a QR code on the right.",
   "printInstructions": "Print flat as placed, face up, no supports.\n\n**Colours**\n- Two parts: a black plate and a yellow striped border that sits flush in pockets in the plate. Load the 3MF and give each part a filament, or print the merged STL in one colour.\n- The captions and the picture are raised 0.8 mm in yellow; the QR code is a white tile with black modules on top. The stripes and the raised yellow detail are the same colour, so one filament does both.\n\n**Fitting**\n- A 4.5 mm hole in each corner takes an M4 screw or a zip tie; the plate is 3 mm thick.\n- Test the QR code with your phone before you trust it: keep the default short, as a long link makes smaller blocks that may not print or scan.\n\n**Picture**\n- Pick a bold line drawing or silhouette and use the *solid* style; fine detail under 0.5 mm will not print.",
+  "published": false,
   "zones": [
     {
       "id": "top",
