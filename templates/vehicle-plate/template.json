@@ -1,0 +1,150 @@
+{
+  "id": "vehicle-plate",
+  "name": "Vehicle Plate",
+  "units": "mm",
+  "tags": [
+    "plate",
+    "sign",
+    "vehicle",
+    "qr",
+    "motorcycle"
+  ],
+  "author": "Jonesie",
+  "parts": [
+    {
+      "id": "plate",
+      "label": "Plate",
+      "colour": 0,
+      "mesh": "plate.glb"
+    },
+    {
+      "id": "stripes",
+      "label": "Striped border",
+      "colour": 1,
+      "mesh": "stripes.glb"
+    }
+  ],
+  "colours": [
+    "#1a1a1a",
+    "#f1c40f",
+    "#f4f4f0"
+  ],
+  "notes": "A small licence-plate style sign for a bike, car or trailer: a single-colour plate with a striped border, a caption along the top and bottom, a picture on the left and a QR code on the right.",
+  "printInstructions": "Print flat as placed, face up, no supports.\n\n**Colours**\n- Two parts: a black plate and a yellow striped border that sits flush in pockets in the plate. Load the 3MF and give each part a filament, or print the merged STL in one colour.\n- The captions and the picture are raised 0.8 mm in yellow; the QR code is a white tile with black modules on top. The stripes and the raised yellow detail are the same colour, so one filament does both.\n\n**Fitting**\n- A 4.5 mm hole in each corner takes an M4 screw or a zip tie; the plate is 3 mm thick.\n- Test the QR code with your phone before you trust it: keep the default short, as a long link makes smaller blocks that may not print or scan.\n\n**Picture**\n- Pick a bold line drawing or silhouette and use the *solid* style; fine detail under 0.5 mm will not print.",
+  "zones": [
+    {
+      "id": "top",
+      "label": "Top caption",
+      "part": "plate",
+      "colour": 1,
+      "origin": [
+        0,
+        24,
+        3
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 110,
+      "height": 9,
+      "mode": "emboss",
+      "depth": 0.8,
+      "maxLines": 1,
+      "default": "ADVENTURE RIDER",
+      "font": "Anton"
+    },
+    {
+      "id": "bottom",
+      "label": "Bottom caption",
+      "part": "plate",
+      "colour": 1,
+      "origin": [
+        0,
+        -24,
+        3
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 110,
+      "height": 9,
+      "mode": "emboss",
+      "depth": 0.8,
+      "maxLines": 1,
+      "default": "RIDE SAFE",
+      "font": "Anton"
+    },
+    {
+      "id": "picture",
+      "label": "Picture",
+      "kind": "image",
+      "part": "plate",
+      "colour": 1,
+      "origin": [
+        -39,
+        0,
+        3
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 38,
+      "height": 36,
+      "mode": "emboss",
+      "depth": 0.8,
+      "maxLines": 1,
+      "default": ""
+    },
+    {
+      "id": "qr",
+      "label": "QR code",
+      "kind": "qr",
+      "part": "plate",
+      "colour": 2,
+      "fg": 0,
+      "origin": [
+        39,
+        0,
+        3
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 36,
+      "height": 36,
+      "mode": "emboss",
+      "depth": 1,
+      "layer": 0.4,
+      "maxLines": 1,
+      "default": "https://threedeeforge.com"
+    }
+  ]
+}

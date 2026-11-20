@@ -11,7 +11,7 @@
 - [ ] Mesh(es) checked in a glTF viewer — geometry looks right, parts
       (if multi-part) don't overlap
 - [ ] Zones sit on the faces they're meant to, and `width`/`height` don't
-      overrun the part
+      overrun the part (QR zones: blocks come out at 0.8 mm or more)
 - [ ] `notes` describe orientation, supports, and multi-colour/assembly
       guidance
 

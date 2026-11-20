@@ -75,7 +75,7 @@ that), so a draft is safe to push and iterate on in a PR.
     {
       "id": "name",
       "label": "Name",
-      "kind": "text",              // "richtext" for multi-line wrapping text, or "symbol" for an icon
+      "kind": "text",              // "richtext" for multi-line wrapping text, "symbol" for an icon, "qr" for a QR code, "image" for a picture
       "part": "body",               // which part this zone sits on (multi-part only)
       "origin": [0, 0, 0],          // zone centre, mm
       "normal": [0, 0, 1],          // out of the solid
@@ -87,7 +87,9 @@ that), so a draft is safe to push and iterate on in a PR.
       "align": "center",            // richtext only: "left" | "center" | "right", the starting alignment
       "default": "Wolfie",
       "font": "OpenSans",           // optional, defaults to the site's own default
-      "colour": 1,                  // optional palette index
+      "colour": 1,                  // optional palette index (qr: the tile behind the code)
+      "fg": 2,                      // qr only, optional: palette index of the code and caption (default black)
+      "layer": 0.4,                 // qr only, optional: thickness of the code layer, mm (default 0.4)
       "arc": { "radius": 12.9, "sweep": 170, "side": "top" },   // optional, curved text
       "backing": { "offset": 1.2, "height": 1 },                 // optional
       "repeat": [[10, 0, 0]],       // optional extra placements, offsets in-plane
@@ -117,6 +119,46 @@ generous `height` and a `maxLines` that matches what you'd want to print; set
 `default` to a realistic sample, as stl-check builds it. A richtext zone can't
 also have `arc`. `symbol` is an icon from the library.
 
+`qr` and `image` need threedeeforge v1.1.0 or later.
+
+`qr` is a QR code of the user's text (your `default` is the sample, such as a
+URL), with an optional caption line under it that the user can type. `width` ×
+`height` is the box the whole thing has to fit in: the code, its four-module quiet
+zone and the caption, scaled down by the user's size slider. It prints as two
+solids that share no volume, so they can be different filaments: a tile `depth`
+mm tall in the zone's `colour` (white by default), and the dark modules and the
+caption standing on the tile as a layer `layer` mm thick (0.4 by default) in
+`fg` (black by default). The site adds white and black to the palette if it
+lacks them. A QR zone is always raised, and `mode` makes no difference; to sink
+one, model a recess in the mesh and put the zone's `origin` on its floor. A
+`depth` of 0 leaves the tile out, so the code and caption print straight onto
+whatever the model has at the zone. Size the zone so that a typical code's
+blocks come out at 0.8 mm or more (the editor warns under that), since smaller
+ones neither print nor scan well; a long default makes a denser code and
+smaller blocks, so keep it short.
+
+`image` is a picture the user picks from their own computer. It is reduced to a
+small grey raster in their browser and never uploaded, and share links carry only the
+conversion settings, so a template can't ship a default picture. Set
+`"default": ""`; the zone starts empty. The picture is redrawn in one colour
+(`colour`), raised or engraved as `mode` says, to `depth` mm, within `width` ×
+`height`. The user chooses how: *solid* traces two-colour art (line drawings,
+logos, silhouettes) as it is, while *dots* and *lines* turn a photo into a
+halftone, with marks that grow with how dark it is there. They also get
+spacing, noise cutoff, invert, background removal, an oval fade and a paint tool
+for erasing or keeping parts. Marks are never narrower than 0.5 mm, and a
+zone is limited to 9000 dots. As for any raised detail, say in `printInstructions`
+whether supports are needed if the zone sits on a vertical face.
+
+```jsonc
+{ "id": "link", "label": "QR code", "kind": "qr", "mode": "emboss", "depth": 1,
+  "origin": [0, 0, 3], "normal": [0, 0, 1], "up": [0, 1, 0],
+  "width": 30, "height": 34, "maxLines": 1, "default": "https://example.com", "colour": 4, "fg": 2 },
+{ "id": "pic", "label": "Picture", "kind": "image", "mode": "emboss", "depth": 0.8,
+  "origin": [0, 0, 3], "normal": [0, 0, 1], "up": [0, 1, 0],
+  "width": 50, "height": 50, "maxLines": 1, "default": "" }
+```
+
 `normal` and `up` must be unit vectors and mutually perpendicular; `up`
 is what "upright" text on that zone means. Look at a few existing
 `templates/*/template.json` files (or the `Zone` type at the top of
@@ -138,7 +180,7 @@ locally:
   parts don't overlap.
 - **Zone placement**: sanity-check that each zone's `origin`/`normal`/`up`
   actually sit on the face you intend, and that `width`/`height` don't
-  overrun the part.
+  overrun the part. For a QR zone, check the block size too (see above).
 - **`template.json` is valid JSON** and matches the schema above.
 - Give a short **`notes`** description of the model, and put the printing
   and assembly advice in **`printInstructions`** (Markdown): orientation,

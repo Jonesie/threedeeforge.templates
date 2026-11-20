@@ -17,9 +17,11 @@ const { Manifold, CrossSection } = wasm
 
 type Vec3 = [number, number, number]
 interface Zone {
-  id: string; label: string; kind?: 'text' | 'richtext' | 'symbol'; align?: 'left' | 'center' | 'right'; origin: Vec3; normal: Vec3; up: Vec3
+  id: string; label: string; kind?: 'text' | 'richtext' | 'symbol' | 'qr' | 'image'; align?: 'left' | 'center' | 'right'; origin: Vec3; normal: Vec3; up: Vec3
   width: number; height: number; mode: 'emboss' | 'engrave'; depth: number
   maxLines: number; default: string; font?: string; part?: string; colour?: number
+  /** qr only: palette index of the code and caption, and the thickness of that layer in mm. */
+  fg?: number; layer?: number
   backing?: { offset: number; height: number }
   arc?: { radius: number; sweep: number; side: 'top' | 'bottom' }
   /** Extra placements, as [x, y, 0] offsets in the zone's own plane. */
@@ -923,6 +925,47 @@ const templates: Tpl[] = [
         arc: { radius: 12.9, sweep: 170, side: 'bottom' } },
       { id: 'value', label: 'Denomination', part: 'inlay', colour: 0, origin: [0, 0, 4], normal: [0, 0, 1], up: [0, 1, 0],
         width: 18, height: 12, mode: 'emboss', depth: 0.4, maxLines: 1, default: '100', font: 'Anton' },
+    ],
+  },
+  {
+    id: 'vehicle-plate',
+    name: 'Vehicle Plate',
+    tags: ['plate', 'sign', 'vehicle', 'qr', 'motorcycle'],
+    notes: 'A small licence-plate style sign for a bike, car or trailer: a single-colour plate with a striped border, a caption along the top and bottom, a picture on the left and a QR code on the right.',
+    printInstructions: 'Print flat as placed, face up, no supports.\n\n**Colours**\n- Two parts: a black plate and a yellow striped border that sits flush in pockets in the plate. Load the 3MF and give each part a filament, or print the merged STL in one colour.\n- The captions and the picture are raised 0.8 mm in yellow; the QR code is a white tile with black modules on top. The stripes and the raised yellow detail are the same colour, so one filament does both.\n\n**Fitting**\n- A 4.5 mm hole in each corner takes an M4 screw or a zip tie; the plate is 3 mm thick.\n- Test the QR code with your phone before you trust it: keep the default short, as a long link makes smaller blocks that may not print or scan.\n\n**Picture**\n- Pick a bold line drawing or silhouette and use the *solid* style; fine detail under 0.5 mm will not print.',
+    // 140 x 75 x 3 plate. The border is a ring of 45 degree stripes in a 1 mm pocket (flush, so the two parts
+    // never share volume), with a plain black rim outside and a plain black line inside. A yellow divider
+    // between the picture and the QR code is cut the same way. Corner holes go through; the stripes keep clear.
+    parts: [
+      { id: 'plate', label: 'Plate', colour: 0 },
+      { id: 'stripes', label: 'Striped border', colour: 1 },
+    ],
+    colours: ['#1a1a1a', '#f1c40f', '#f4f4f0'],
+    build: () => {
+      const W = 140, H = 75, R = 6, T = 3, BAND = 8, RIM = 1, DEPTH = 1, PITCH = 8, BAR = 4
+      const outline = roundedRect(W, H, R)
+      const ring = outline.offset(-RIM, 'Round', 2, 32).subtract(outline.offset(-(BAND - RIM), 'Round', 2, 32))
+      const bars = CrossSection.union(
+        Array.from({ length: 41 }, (_, i) => CrossSection.square([BAR, 300], true).translate((i - 20) * PITCH, 0).rotate(45)),
+      )
+      const holes = [-1, 1].flatMap((sx) => [-1, 1].map((sy) => [sx * (W / 2 - 5), sy * (H / 2 - 5)] as XY))
+      const keepClear = CrossSection.union(holes.map(([x, y]) => CrossSection.circle(4.2, 48).translate(x, y)))
+      const divider = CrossSection.square([1.2, 36], true)
+      const stripe2d = ring.intersect(bars).subtract(keepClear).add(divider)
+      const pocket = Manifold.extrude(stripe2d, DEPTH).translate(0, 0, T - DEPTH)
+      const throughHoles = Manifold.union(holes.map(([x, y]) => Manifold.cylinder(T + 2, 2.25, 2.25, 32).translate(x, y, -1)))
+      const plate = Manifold.extrude(outline, T).subtract(pocket).subtract(throughHoles)
+      return { plate, stripes: pocket }
+    },
+    zones: [
+      { id: 'top', label: 'Top caption', part: 'plate', colour: 1, origin: [0, 24, 3], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 110, height: 9, mode: 'emboss', depth: 0.8, maxLines: 1, default: 'ADVENTURE RIDER', font: 'Anton' },
+      { id: 'bottom', label: 'Bottom caption', part: 'plate', colour: 1, origin: [0, -24, 3], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 110, height: 9, mode: 'emboss', depth: 0.8, maxLines: 1, default: 'RIDE SAFE', font: 'Anton' },
+      { id: 'picture', label: 'Picture', kind: 'image', part: 'plate', colour: 1, origin: [-39, 0, 3], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 38, height: 36, mode: 'emboss', depth: 0.8, maxLines: 1, default: '' },
+      { id: 'qr', label: 'QR code', kind: 'qr', part: 'plate', colour: 2, fg: 0, origin: [39, 0, 3], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 36, height: 36, mode: 'emboss', depth: 1, layer: 0.4, maxLines: 1, default: 'https://threedeeforge.com' },
     ],
   },
   {
