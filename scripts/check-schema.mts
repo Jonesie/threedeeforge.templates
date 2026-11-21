@@ -68,7 +68,7 @@ function check(id: string): string[] {
     if (zoneIds.has(zid)) errs.push(`duplicate zone id "${zid}"`)
     zoneIds.add(zid)
     if (!isStr(z.label)) errs.push(`${at} label required`)
-    if (z.kind !== undefined && z.kind !== 'text' && z.kind !== 'symbol' && z.kind !== 'richtext') errs.push(`${at} kind must be "text", "richtext" or "symbol"`)
+    if (z.kind !== undefined && !['text', 'symbol', 'richtext', 'qr', 'image'].includes(z.kind)) errs.push(`${at} kind must be "text", "richtext", "symbol", "qr" or "image"`)
     if (z.align !== undefined && z.align !== 'left' && z.align !== 'center' && z.align !== 'right') errs.push(`${at} align must be "left", "center" or "right"`)
     if (z.kind === 'richtext' && z.arc) errs.push(`${at} a richtext zone can't also have arc`)
     if (z.mode !== 'emboss' && z.mode !== 'engrave') errs.push(`${at} mode must be "emboss" or "engrave"`)
@@ -80,9 +80,12 @@ function check(id: string): string[] {
     }
     // width is ignored (0) on arc zones: the arc length is the width.
     for (const k of ['width', 'height', 'depth']) {
-      const ok = typeof z[k] === 'number' && (z[k] > 0 || (k === 'width' && z.arc && z[k] === 0))
-      if (!ok) errs.push(`${at} ${k} must be a positive number`)
+      // A QR zone may have depth 0: no tile, the code prints straight onto the model.
+      const ok = typeof z[k] === 'number' && (z[k] > 0 || (k === 'width' && z.arc && z[k] === 0) || (k === 'depth' && z.kind === 'qr' && z[k] === 0))
+      if (!ok) errs.push(`${at} ${k} must be a positive number${k === 'depth' ? ' (0 is allowed on a qr zone)' : ''}`)
     }
+    if (z.fg !== undefined && (z.kind !== 'qr' || !Number.isInteger(z.fg) || z.fg < 0 || z.fg >= nColours)) errs.push(`${at} fg must be a palette index and is only for qr zones`)
+    if (z.layer !== undefined && (z.kind !== 'qr' || typeof z.layer !== 'number' || z.layer <= 0)) errs.push(`${at} layer must be a positive number and is only for qr zones`)
     // Raised detail on a vertical wall has an unsupported underside: the print instructions must say so.
     if (z.mode === 'emboss' && isVec3(z.normal) && Math.abs(z.normal[2]) < 0.9 && !/support/i.test(t.printInstructions ?? ''))
       errs.push(`${at} embossed on a non-horizontal face, so printInstructions must say whether supports are needed`)
