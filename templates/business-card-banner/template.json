@@ -1,0 +1,105 @@
+{
+  "id": "business-card-banner",
+  "name": "Business Card (Banner)",
+  "units": "mm",
+  "tags": [
+    "card",
+    "business",
+    "logo",
+    "banner"
+  ],
+  "author": "Jonesie",
+  "mesh": "mesh.glb",
+  "colours": [
+    "#f4f4f0",
+    "#1a1a1a"
+  ],
+  "notes": "A thin, plain business card with a wide, short picture or logo banner across the top and a name and contact details underneath.",
+  "printInstructions": "Print flat as placed, face up, no supports.\n\n**Colours**\n- One plain card with the banner, name and contact details raised 0.4 mm on top. Pause at the layer where the raised detail starts and swap filament for a two-colour card, or print it in one colour.\n\n**Text**\n- Keep the contact details to three short lines; the more you add, the smaller the text gets, and anything under about 2 mm tall will not print cleanly.\n\n**Banner**\n- The banner is wide and short (75 x 18 mm), so a horizontal logo or wordmark works best. Pick a bold line drawing and use the *solid* style; fine detail under 0.5 mm will not print.",
+  "published": false,
+  "zones": [
+    {
+      "id": "banner",
+      "label": "Banner",
+      "kind": "image",
+      "colour": 1,
+      "origin": [
+        0,
+        15,
+        1.2
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 75,
+      "height": 18,
+      "mode": "emboss",
+      "depth": 0.4,
+      "maxLines": 1,
+      "default": ""
+    },
+    {
+      "id": "name",
+      "label": "Name",
+      "colour": 1,
+      "origin": [
+        0,
+        -2,
+        1.2
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 75,
+      "height": 8,
+      "mode": "emboss",
+      "depth": 0.4,
+      "maxLines": 1,
+      "default": "Peter Jones",
+      "font": "Anton"
+    },
+    {
+      "id": "details",
+      "label": "Contact details",
+      "kind": "richtext",
+      "align": "center",
+      "colour": 1,
+      "origin": [
+        0,
+        -16.5,
+        1.2
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ],
+      "width": 75,
+      "height": 13,
+      "mode": "emboss",
+      "depth": 0.4,
+      "maxLines": 3,
+      "font": "OpenSans",
+      "default": "Director\n+64 21 123 4567\npeter@example.com"
+    }
+  ]
+}
