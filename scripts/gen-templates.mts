@@ -970,6 +970,27 @@ const templates: Tpl[] = [
     ],
   },
   {
+    id: 'business-card',
+    name: 'Business Card',
+    tags: ['card', 'business', 'logo', 'gift'],
+    notes: 'A thin, plain business card: a name and contact details raised on the left and a logo or picture on the right.',
+    printInstructions: 'Print flat as placed, face up, no supports.\n\n**Colours**\n- One plain card with the name, contact details and logo raised 0.4 mm on top. Pause at the layer where the text starts and swap filament for a two-colour card, or print it in one colour.\n\n**Text**\n- Keep the contact details to four short lines; the more you add, the smaller the text gets, and anything under about 2 mm tall will not print cleanly.\n\n**Logo**\n- Pick a bold line drawing or silhouette and use the *solid* style; fine detail under 0.5 mm will not print.',
+    // 85 x 55 x 1.2 card (credit-card-ish proportions) with rounded corners. Name and details left-aligned
+    // on the left, picture zone on the right.
+    colours: ['#f4f4f0', '#1a1a1a'],
+    build: () => Manifold.extrude(roundedRect(85, 55, 3), 1.2),
+    published: false,
+    zones: [
+      { id: 'name', label: 'Name', align: 'left', colour: 1, origin: [-16, 15, 1.2], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 46, height: 9, mode: 'emboss', depth: 0.4, maxLines: 1, default: 'Peter Jones', font: 'Anton' },
+      { id: 'details', label: 'Contact details', kind: 'richtext', align: 'left', colour: 1, origin: [-16, -5, 1.2], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 46, height: 26, mode: 'emboss', depth: 0.4, maxLines: 4, font: 'OpenSans',
+        default: 'Director\n+64 21 123 4567\npeter@example.com\nthreedeeforge.com' },
+      { id: 'logo', label: 'Logo', kind: 'image', colour: 1, origin: [27, 0, 1.2], normal: [0, 0, 1], up: [0, 1, 0],
+        width: 28, height: 28, mode: 'emboss', depth: 0.4, maxLines: 1, default: '' },
+    ],
+  },
+  {
     id: 'cat-tag',
     name: 'Cat Tag',
     tags: ['pet', 'tag', 'cat'],
